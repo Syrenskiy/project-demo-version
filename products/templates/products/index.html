@@ -1,0 +1,93 @@
+{% extends 'base.html' %}
+{% load i18n static custom_filters cache %}
+
+{% block content %}
+  <!-- Displaying messages -->
+  {% if messages %}
+    <div class="container my-4">
+      {% for message in messages %}
+        <div class="alert {{ message.tags }}" role="alert">
+          {{ message }}
+        </div>
+      {% endfor %}
+    </div>
+  {% endif %}
+  {% cache 3600 "index_body" request.get_full_path request.LANGUAGE_CODE %}
+    {% if cat_selected == 0 %}
+      <!-- Full width image -->
+      <div class="welcome-image-container mb-3">
+        <picture>
+          <source media="(max-width: 767px)"
+                  srcset="{% static 'products/images/welcome_mobile.jpg' %}">
+          <source media="(min-width: 768px)"
+                  srcset="{% static 'products/images/welcome_desktop.jpg' %}">
+          <img class="img-fluid w-100"
+               src="{% static 'products/images/welcome_desktop.jpg' %}"
+               alt="{% translate 'Bienvenidos a nuestro rincón de tejido' %}"
+               style="object-fit: cover; height: auto;">
+        </picture>
+      </div>
+
+      <!-- Horizontally scrolling category menu -->
+      <div class="thematic-categories d-flex gap-3 overflow-auto pb-3 px-3">
+        {% for category in thematic_categories %}
+          {% with category_url=category.get_absolute_url %}
+            <div class="category-card position-relative d-inline-block rounded overflow-hidden"
+                 style="background: url('{{ category.image_thematic.url }}') no-repeat center;">
+              <a href="{{ category_url }}" class="stretched-link text-decoration-none">
+                <div
+                  class="category-overlay position-absolute w-100 h-100 d-flex align-items-center justify-content-center">
+                  <h5 class="category-text text-center p-2">
+                    {{ category.name }}
+                  </h5>
+                </div>
+              </a>
+            </div>
+          {% endwith %}
+        {% endfor %}
+      </div>
+
+
+    {% else %}
+      <div class="container text-center my-4">
+        <div class="d-inline-block bg-soft-primary text-white rounded-pill py-3 px-4 shadow-lg">
+          <h2 class="h3 mb-0 fw-bold text-uppercase">
+          {{ title }}
+          </h2>
+        </div>
+      </div>
+    {% endif %}
+
+    <!-- List of products -->
+    <div class="container-fluid px-3">
+      <ul class="product-list row list-unstyled gx-3 gy-4">
+        {% for product in products %}
+          {% with product_url=product.get_absolute_url %}
+            <li class="product-item col-6 col-md-3 col-lg-2">
+              <div class="card custom-card h-100 border-0 shadow-sm">
+                <a href="{{ product_url }}">
+                  <img src="{{ product.image_3x4.url }}"
+                       class="card-img-top rounded-top" alt="{% translate "Imagen" %}">
+                </a>
+                <div class="card-body text-center p-3">
+                  <h5 class="card-title mb-2">
+                    <a href="{{ product_url }}" class="text-decoration-none text-dark fw-bold">
+                      {{ product.name }}
+                    </a>
+                  </h5>
+                  <p class="card-text text-muted fw-semibold">${{ product.min_price|floatformat_custom }}</p>
+                </div>
+              </div>
+            </li>
+          {% endwith %}
+        {% endfor %}
+      </ul>
+    </div>
+  {% endcache %}
+{% endblock %}
+
+{% block pagination %}
+  {% cache 3600 "index_pagination" request.get_full_path request.LANGUAGE_CODE %}
+    {% include "products/includes/pagination.html" %}
+  {% endcache %}
+{% endblock %}

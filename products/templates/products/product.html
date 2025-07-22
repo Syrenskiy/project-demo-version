@@ -1,0 +1,288 @@
+{% extends 'base.html' %}
+{% load i18n l10n static multiply custom_filters cache %}
+
+{% block custom_styles %}
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/Swiper/10.0.4/swiper-bundle.min.css">
+{% endblock %}
+{% block content %}
+  <!-- Displaying messages -->
+  {% if messages %}
+    <div class="container my-4">
+      {% for message in messages %}
+        <div class="alert {{ message.tags }}" role="alert">
+          {{ message }}
+        </div>
+      {% endfor %}
+    </div>
+  {% endif %}
+
+  <!-- Modal for unauthorized action -->
+  <div class="modal fade" id="loginModal" tabindex="-1" aria-labelledby="loginModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="loginModalLabel">{% translate "Se requiere autorización" %}</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body">
+          {% translate "Para agregar un producto a los favoritos, inicie sesión o regístrate." %}
+        </div>
+        <div class="modal-footer">
+          <a href="{% url 'users:login' %}" class="btn btn-soft-primary">{% translate "Iniciar Sesión" %}</a>
+          <a href="{% url 'users:register' %}" class="btn btn-soft-danger">{% translate "Registrarse" %}</a>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  {% cache 3600 "product_name_and_photos" category.slug product.slug color.slug request.LANGUAGE_CODE %}
+    <div class="container my-4">
+    <h3 class="text-start mb-3">{{ product.name }}</h3>
+    <div class="row">
+    <!-- Product images -->
+    <div class="col-md-6">
+    <div class="swiper-container">
+      <div class="swiper-wrapper">
+        {% for image in all_images %}
+          <div class="swiper-slide">
+            <a href="{{ image.image.url }}">
+              <img src="{{ image.image_product.url }}"
+                   class="d-block w-100" alt="{% translate "Imagen" %}">
+            </a>
+          </div>
+        {% endfor %}
+      </div>
+    </div>
+  {% endcache %}
+<div class="d-flex justify-content-between align-items-center my-3">
+  <!-- Likes -->
+  <a href="#" class="btn like"
+    {% with all_likes=product.likes.all %}
+      {% if not request.user.is_authenticated %}
+     data-bs-toggle="modal" data-bs-target="#loginModal"
+      {% else %}
+     data-id="{{ product.id }}"
+     data-action="{% if request.user in all_likes %}un{% endif %}like"
+     data-url="{% url 'like' %}"
+      {% endif %}>
+      {% if request.user in all_likes %}
+        <img src="{% static 'products/images/heart2.png' %}" alt="Unlike" style="width: 30px;">
+      {% else %}
+        <img src="{% static 'products/images/heart.png' %}" alt="Like" style="width: 30px;">
+      {% endif %}
+    {% endwith %}
+  </a>
+  {% cache 3600 "product_buttons_and_info" category.slug product.slug color.slug request.LANGUAGE_CODE %}
+    <!-- Pagination -->
+    <div class="swiper-pagination"></div>
+
+    <!-- Share button -->
+    <div class="share-container">
+      <button id="mobile-share-button" class="btn mobile-only p-0"
+              data-share-text="{% translate 'Mira este producto!' %}">
+        <img src="{% static 'products/images/svg/share/share.svg' %}" alt="Share icon" style="width: 30px;">
+      </button>
+      <div class="dropdown my-2 ms-1 desktop-only">
+        <a class="btn p-0 dropdown-toggle-no-arrow d-flex align-items-center" href="#" role="button"
+           id="shareDropdown"
+           data-bs-toggle="dropdown" aria-expanded="false">
+          <img src="{% static 'products/images/svg/share/share.svg' %}" alt="Share" style="width: 30px;">
+        </a>
+        <ul class="dropdown-menu text-center custom-dropdown" aria-labelledby="shareDropdown">
+          <li>
+            <a class="dropdown-item d-flex align-items-center"
+               href="https://api.whatsapp.com/send?text={{ absolute_url }}" target="_blank">
+              <img src="{% static 'products/images/svg/share/whatsapp-share.svg' %}" alt="WhatsApp">
+            </a>
+          </li>
+          <li>
+            <a class="dropdown-item d-flex align-items-center"
+               href="https://www.facebook.com/sharer/sharer.php?u={{ absolute_url }}" target="_blank">
+              <img src="{% static 'products/images/svg/share/facebook-share.svg' %}" alt="Facebook">
+            </a>
+          </li>
+          <li>
+            <!-- Icon for copying URL -->
+            <button id="copy-url-button"
+                    class="dropdown-item d-flex align-items-center border-0 bg-transparent">
+              <img src="{% static 'products/images/svg/share/copy-link.svg' %}" alt="Copy URL">
+            </button>
+          </li>
+        </ul>
+      </div>
+    </div>
+
+    <!-- Toast to display notification -->
+    <div class="position-fixed bottom-0 end-0 p-3" style="z-index: 11">
+      <div id="copyToast" class="toast align-items-center text-bg-success border-0" role="alert"
+           aria-live="assertive" aria-atomic="true">
+        <div class="d-flex">
+          <div class="toast-body">
+            {% translate "Enlace copiado exitosamente!" %}
+          </div>
+          <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast"
+                  aria-label="Close"></button>
+        </div>
+      </div>
+    </div>
+
+    </div>
+    </div>
+
+    <!-- Product details -->
+    <div class="col-md-6 text-start">
+    <p id="product-price" class="text-muted fs-4">${{ product.min_price|floatformat_custom }}</p>
+    <p class="text-secondary">{{ product.description|linebreaks }}</p>
+
+    <!-- Product colors -->
+    <div class="mb-3">
+      <label class="form-label">{{ cart_product_form.color.label }}: {{ color.name }}</label>
+      <div class="d-flex">
+        {% for color in product.colors.all %}
+          <a
+            href="{% url 'product' category_slug=product.category.slug product_slug=product.slug color_slug=color.color.slug %}"
+            class="me-2 {% if color.color.slug == color_slug %}selected{% endif %}">
+            <img src="{{ color.color.icon.url }}" alt="Icono" class="rounded-circle color-icon">
+          </a>
+        {% endfor %}
+      </div>
+    </div>
+  {% endcache %}
+  <!-- Add to cart form -->
+  <form action="{% url 'cart:cart_add' product_id=product.id color_slug=color_slug %}" method="post">
+    {% csrf_token %}
+    {% if cart_product_form.fields.size.required %}
+      <div id="size-selector" class="mb-3">
+        <div><label class="form-label">{{ cart_product_form.size.label }}</label></div>
+        <div class="btn-group" role="group">
+          {% for choice in cart_product_form.size.field.choices %}
+            <input type="radio" class="btn-check" id="size_{{ choice.0 }}"
+                   name="{{ cart_product_form.size.name }}"
+                   value="{{ choice.0 }}">
+            <label class="btn btn-outline-soft-primary" for="size_{{ choice.0 }}">{{ choice.1 }}</label>
+          {% endfor %}
+        </div>
+      </div>
+    {% endif %}
+    {% if cart_product_form.fields.quantity.required %}
+      <div id="quantity-selector" class="mb-3">
+        <div><label class="form-label">{{ cart_product_form.quantity.label }}</label></div>
+        <div class="btn-group" role="group">
+          {% for choice in cart_product_form.quantity.field.choices %}
+            <input type="radio" class="btn-check" id="quantity_{{ choice.0 }}"
+                   name="{{ cart_product_form.quantity.name }}"
+                   value="{{ choice.0 }}">
+            <label class="btn btn-outline-soft-primary" for="quantity_{{ choice.0 }}">{{ choice.1 }}</label>
+          {% endfor %}
+        </div>
+      </div>
+    {% endif %}
+    <div class="mb-3">
+      {% if need_to_show_product_quantity %}
+        <label class="form-label">{{ cart_product_form.product_quantity.label }}</label>
+        <div class="btn-group w-100" role="group">
+          {% for choice in cart_product_form.product_quantity.field.choices %}
+            <input type="radio" class="btn-check" id="product_quantity_{{ choice.0 }}"
+                  name="{{ cart_product_form.product_quantity.name }}" value="{{ choice.0 }}">
+            <label class="btn btn-outline-soft-primary"
+                  for="product_quantity_{{ choice.0 }}">{{ choice.1 }}</label>
+          {% endfor %}
+        </div>
+      {% else %}
+        <input type="hidden" name="{{ cart_product_form.product_quantity.name }}" value="1">
+      {% endif %}
+      <input type="hidden" id="product-id" value="{{ product.id }}">
+      <input type="hidden" name="{{ cart_product_form.color.name }}"
+             value="{{ cart_product_form.color.value }}">
+      <input type="hidden" name="{{ cart_product_form.price.name }}" id="price-field"
+             value="{{ cart_product_form.price.value|floatformat_custom }}">
+      <button type="submit"
+              class="btn btn-soft-primary btn-lg w-100 mt-3">{% translate "Agregar al carrito" %}</button>
+    </div>
+  </form>
+  {% cache 3600 "product_similarproducts_and_comments" category.slug product.slug color.slug request.LANGUAGE_CODE %}
+    <!-- Block "Similar products" -->
+    <h2 class="mt-5">{% translate "Productos similares" %}</h2>
+    <div class="similar-products d-flex gap-3 overflow-auto pb-3">
+      {% for product, product_url in similar_products %}
+        <div class="col-7 col-md-6 col-lg-4">
+          <a href="{{ product_url }}" class="text-decoration-none">
+            <div class="card custom-card h-100">
+              <img src="{{ product.image_1x1.url }}"
+                   class="card-img-top" alt="{% translate "Imagen" %}">
+              <div class="card-body">
+                <h6 class="card-title similar-products-title">{{ product.name }}</h6>
+                <p class="card-text">${{ product.min_price|floatformat_custom }}</p>
+              </div>
+            </div>
+          </a>
+        </div>
+      {% empty %}
+        <p>{% translate "Todavía no hay productos similares" %}</p>
+      {% endfor %}
+    </div>
+    </div>
+    </div>
+    </div>
+
+    <!-- Comments -->
+    <div class="container text-start my-4">
+      <div class="rating-container">
+        <h2 class="mb-3">
+          {% if request.LANGUAGE_CODE == "ru" %}
+            {{ total_comments }} комментари{{ suffix }}
+          {% else %}
+            {{ total_comments }} {% translate "comentario" %}{{ total_comments|pluralize }}
+          {% endif %}
+        </h2>
+
+        {% if average_rating %}
+          <div class="d-flex align-items-center mb-3 justify-content-start">
+            <div class="stars-outer">
+              <div class="stars-inner" style="width: {{ average_rating|multiply:20|floatformat:"0" }}%;"></div>
+            </div>
+            <span class="rating-text ms-3">{{ average_rating|floatformat_custom }}</span>
+          </div>
+        {% endif %}
+      </div>
+
+      <div class="comments-container">
+        {% for comment in comments %}
+          <div class="comment card mb-4 shadow-sm border-0" data-index="{{ forloop.counter }}">
+            <div class="card-body">
+              <div class="d-flex align-items-center mb-2">
+                <p class="fw-bold mb-0 me-auto">
+                  {{ comment.user }} <span class="text-muted fs-6"> - {{ comment.created|date:"j M Y" }}</span>
+                </p>
+                <div class="stars-outer ms-2">
+                  <div class="stars-inner" style="width: {{ comment.rating|multiply:20|floatformat:"0" }}%;"></div>
+                </div>
+              </div>
+              <p class="card-text mt-3">{{ comment.comment|linebreaks }}</p>
+            </div>
+          </div>
+        {% endfor %}
+      </div>
+
+      <nav>
+        <ul class="pagination mt-4 ps-0">
+          {% for page_num in 1|to:total_pages %}
+            <li class="mx-1 {% if page_num == page_obj.number %}active{% endif %}">
+              <button class="page-link" data-page="{{ page_num }}">{{ page_num }}</button>
+            </li>
+          {% endfor %}
+        </ul>
+      </nav>
+    </div>
+  {% endcache %}
+
+{% endblock %}
+{% block custom_js %}
+  <script src="https://cdn.jsdelivr.net/npm/swiper/swiper-bundle.min.js"></script>
+  <script src="{% static 'products/js/custom_swiper.js' %}"></script>
+  <script src="{% static 'products/js/like.js' %}"></script>
+  <script src="{% static 'products/js/update_price.js' %}"></script>
+  <script src="{% static 'products/js/comments_pagination.js' %}"></script>
+  <script src="{% static 'products/js/web_share_api.js' %}"></script>
+  <script src="{% static 'products/js/clipboard.js' %}"></script>
+{% endblock %}

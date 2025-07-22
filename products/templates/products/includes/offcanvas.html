@@ -1,0 +1,133 @@
+{% load i18n static products_tags cache %}
+
+<div class="offcanvas offcanvas-start bg-white text-dark" tabindex="-1" id="sideMenu" aria-labelledby="sideMenuLabel">
+  <div class="offcanvas-body p-0">
+
+    <!-- Header with icon and title -->
+    <div class="bg-light-pink text-white py-3 px-4 d-flex align-items-center">
+      <a href="{% url user_menu.url_name %}" class="d-flex align-items-center text-decoration-none text-white w-100">
+        <img src="{{ user_menu.url_icon }}" alt="{{ user_menu.title }}" class="me-3" style="width: 30px; height: 30px;">
+        <span class="fs-5 fw-bold">{{ user_menu.title }}</span>
+      </a>
+    </div>
+
+    {% if has_uncommented_items %}
+      <div class="d-flex justify-content-center px-3">
+        <a href="{% url 'users:comments' %}"
+           class="btn btn-soft-primary d-flex align-items-center px-3 py-2 mt-3">
+          <img src="{% static 'products/images/svg/offcanvas/comments.svg' %}" alt="{% translate "Dejar Comentarios" %}"
+               class="me-2" style="width: 20px; height: 20px;">
+          <span class="fs-6">{% translate "Dejar Comentarios" %}</span>
+        </a>
+      </div>
+    {% endif %}
+
+    <div class="row mt-3 px-3">
+
+      {% cache 3600 "offcanvas" cat_selected request.LANGUAGE_CODE %}
+        <!-- Categories -->
+        <div class="mb-3 col-12">
+          <h6 class="text-uppercase fw-bold mb-3 border-bottom pb-2">{% translate "Categorías" %}</h6>
+          <ul class="list-group list-group-flush">
+            {% show_categories cat_selected %}
+          </ul>
+        </div>
+
+        <!-- Icons between categories and tags -->
+        <div class="col-12 mb-4 mt-3 text-center">
+          <!-- Link for mobile devices -->
+          <a href="{{ facebook_link_mobile }}" class="social-icons-menu mobile-only">
+            <img src="{% static 'products/images/svg/offcanvas/facebook.svg' %}" alt="{% translate 'Imagen' %}"
+                 class="img-fluid">
+          </a>
+
+          <!-- Link for PC -->
+          <a href="{{ facebook_link_desktop }}" class="social-icons-menu desktop-only">
+            <img src="{% static 'products/images/svg/offcanvas/facebook.svg' %}" alt="{% translate 'Imagen' %}"
+                 class="img-fluid">
+          </a>
+
+          <a href="{{ instagram_link }}" class="social-icons-menu">
+            <img src="{% static 'products/images/svg/offcanvas/instagram.svg' %}" alt="{% translate 'Imagen' %}"
+                 class="img-fluid">
+          </a>
+        </div>
+
+        <!-- Payment Confirmation -->
+        <div class="my-2 ms-0">
+          <a href="{% url 'payment:payment_confirmation' %}" role="button"
+             class="btn p-0 text-white d-flex align-items-center">
+            <img src="{% static 'products/images/svg/offcanvas/payment_confirmation.svg' %}" alt="{% translate 'Confirmar el Pago' %}"
+                 class="me-2"
+                 style="width: 20px;">
+            <span class="fs-6 text-dark">{% translate 'Confirmar el Pago' %}</span>
+          </a>
+        </div>
+
+        <!-- Link "Didn't find a product you like?" -->
+        <div class="my-2 ms-0">
+          <a href="{% url 'product_suggestion' %}" role="button"
+             class="btn p-0 text-white d-flex align-items-center">
+            <img src="{% static 'products/images/svg/offcanvas/lightbulb.svg' %}" alt="{% translate 'Propuesta' %}"
+                 class="me-2"
+                 style="width: 20px;">
+            <span class="fs-6 text-dark">{% translate "No encontró lo que buscaba?" %}</span>
+            {#          <span class="fs-6 text-dark">{% translate "Busca algo deferente?" %}</span>#}
+          </a>
+        </div>
+
+        <!-- About Us -->
+        <div class="my-2 ms-0">
+          <a href="{% url 'about' %}" role="button"
+             class="btn p-0 text-white d-flex align-items-center">
+            <img src="{% static 'products/images/svg/offcanvas/about_us.svg' %}" alt="{% translate 'Sobre Nosotros' %}"
+                 class="me-2"
+                 style="width: 20px;">
+            <span class="fs-6 text-dark">{% translate 'Sobre Nosotros' %}</span>
+          </a>
+        </div>
+
+        <!-- Privacy Policy -->
+        <div class="my-2 ms-0">
+          <a href="{% url 'privacy_policy' %}" role="button"
+             class="btn p-0 text-white d-flex align-items-center">
+            <img src="{% static 'products/images/svg/offcanvas/privacy-policy.svg' %}"
+                 alt="{% translate 'Política de Privacidad' %}" class="me-2" style="width: 20px;">
+            <span class="fs-6 text-dark">{% translate "Política de Privacidad" %}</span>
+          </a>
+        </div>
+
+        <!-- Dropdown menu for languages -->
+        <div class="dropdown my-2 ms-0">
+          <a class="btn p-0 dropdown-toggle-no-arrow d-flex align-items-center" href="#" role="button"
+             id="languageDropdown"
+             data-bs-toggle="dropdown" aria-expanded="false">
+            <img src="{% static 'products/images/svg/offcanvas/globe.svg' %}" alt="Select Language" class="me-2"
+                 style="width: 20px;">
+            <span class="fs-6 text-dark">{% translate "Idioma" %}</span>
+          </a>
+          <ul class="dropdown-menu text-center gap-5" aria-labelledby="languageDropdown">
+            {% for lang_code, lang_name in languages %}
+              <li>
+                <a class="dropdown-item d-flex align-items-center" href="/{{ lang_code }}/">
+                  <img src="{% static 'products/images/svg/offcanvas/flag_' %}{{ lang_code }}.svg" alt="{{ lang_name }}"
+                       class="flag-icon me-2"
+                       style="width: 20px;">
+                  <span class="fs-6">{{ lang_name }}</span>
+                </a>
+              </li>
+            {% endfor %}
+          </ul>
+        </div>
+
+        <!-- Tags -->
+        <div class="col-12 mb-4">
+          <h6 class="text-uppercase fw-bold mb-3 border-bottom pb-2">{% translate "Etiquetas" %}</h6>
+          <ul class="list-group list-group-flush">
+            {% show_tags %}
+          </ul>
+        </div>
+      {% endcache %}
+    </div>
+  </div>
+</div>

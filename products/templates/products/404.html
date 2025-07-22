@@ -1,0 +1,28 @@
+{% extends 'base.html' %}
+{% load static i18n %}
+
+{% block title %}{% translate "404 Página no encontrada" %}{% endblock %}
+
+{% block content %}
+<div class="container my-2 text-center">
+  <div class="pb-5">
+    <h1 class="display-1 text-soft-danger" style="font-size: 7rem;">404</h1>
+    <div class="mt-2 mb-4">
+      <picture>
+        <source media="(max-width: 767px)" 
+                srcset="{% static 'products/images/404.webp' %}">
+    
+        <source media="(min-width: 768px)" 
+                srcset="{% static 'products/images/404-large.webp' %}">
+    
+        <img src="{% static 'products/images/404-large.webp' %}" 
+             alt="404"
+             class="img-fluid rounded w-100 w-md-70"
+             style="height: auto;">
+      </picture>
+    </div>
+    <a href="{% url 'home' %}" class="btn btn-soft-primary btn-lg mt-3">{% translate "Volver a la página principal" %}</a>
+  </div>
+</div>
+{% endblock %}
+

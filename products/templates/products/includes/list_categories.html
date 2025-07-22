@@ -1,0 +1,19 @@
+{% load i18n %}
+
+<ul class="list-group">
+  <!-- Ссылка "Todo" -->
+  <li class="list-group-item {% if cat_selected == 0 %}active{% endif %}">
+    <a href="{% url 'home' %}" class="text-decoration-none">
+      {% translate "Todo" %}
+    </a>
+  </li>
+
+  <!-- Динамический список категорий -->
+  {% for cat in categories %}
+    <li class="list-group-item {% if cat.id == cat_selected %}active{% endif %}">
+      <a href="{{ cat.get_absolute_url }}" class="text-decoration-none">
+        {{ cat.name }}
+      </a>
+    </li>
+  {% endfor %}
+</ul>

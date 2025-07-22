@@ -1,0 +1,32 @@
+{#{% for m in menu %}#}
+{#  {% if m.title != "Select Language" %}#}
+{#    <!-- Обычная иконка -->#}
+{#    <span class="ms-2">#}
+{#      <a href="{% url m.url_name %}">#}
+{#        <img src="{{ m.url_icon }}" alt="{{ m.title }}" style="width: 30px;">#}
+{#      </a>#}
+{#    </span>#}
+{#  {% else %}#}
+{#    <!-- Выпадающее меню для языков -->#}
+{#    <div class="dropdown ms-2">#}
+{#      <a class="btn p-0 dropdown-toggle-no-arrow" href="#" role="button" id="languageDropdown"#}
+{#         data-bs-toggle="dropdown" aria-expanded="false">#}
+{#        <img src="{{ m.url_icon }}" alt="{{ m.title }}" class="language-icon">#}
+{#      </a>#}
+{#      <ul class="dropdown-menu text-center custom-dropdown" aria-labelledby="languageDropdown">#}
+{#        {% for lang_code, lang_name in languages %}#}
+{#          <li>#}
+{#            <a class="dropdown-item" href="/{{ lang_code }}/">#}
+{#              <img src="/media/icons/flag_{{ lang_code }}.svg" alt="{{ lang_name }}" class="flag-icon">#}
+{#            </a>#}
+{#          </li>#}
+{#        {% endfor %}#}
+{#      </ul>#}
+{#    </div>#}
+{#  {% endif %}#}
+{#{% endfor %}#}
+{#{% with menu_item=menu.0 %}#}
+{#            <a href="{% url menu_item.url_name %}">#}
+{#              <img src="{{ menu_item.url_icon }}" alt="{{ menu_item.title }}" style="width: 30px;">#}
+{#            </a>#}
+{#{% endwith %}#}

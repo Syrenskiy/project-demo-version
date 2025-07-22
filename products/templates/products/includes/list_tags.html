@@ -1,0 +1,11 @@
+  {% load i18n %}
+
+  {% if tags %}
+    <ul class="list-group-tags">
+      {% for tag in tags %}
+        <li class="list-group-item-tags">
+          <a href="{{ tag.get_absolute_url }}" class="text-decoration-none">{{ tag.name }}</a>
+        </li>
+      {% endfor %}
+    </ul>
+  {% endif %}

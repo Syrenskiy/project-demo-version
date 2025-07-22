@@ -1,0 +1,57 @@
+{% extends "base.html" %}
+{% load i18n products_tags custom_filters %}
+
+{% block content %}
+  <div class="container mt-4">
+    {% if query %}
+      <h2 class="mb-3">{% translate "Resultados de la búsqueda" %} "{{ query }}"</h2>
+      <h3 class="mb-4">
+        {% get_current_language as LANGUAGE_CODE %}
+        {% if LANGUAGE_CODE == "ru" %}
+          Нашлось {{ total_results }} товар{{ suffix }}
+        {% else %}
+          {% translate "Mostrando" %} {{ total_results }} {% translate "producto" %}{{ total_results|pluralize }}
+        {% endif %}
+      </h3>
+
+      {% if results %}
+        <div class="container-fluid px-3">
+          <ul class="product-list row list-unstyled gx-3 gy-4">
+            {% for product in results %}
+              {% with product_url=product.get_absolute_url %}
+                <li class="product-item col-6 col-md-4 col-lg-3">
+                  <div class="card custom-card h-100 border-0 shadow-sm">
+                    <a href="{{ product_url }}">
+                      <img src="{{ product.image_3x4.url }}"
+                           class="card-img-top rounded-top" alt="{% translate "Imagen" %}">
+                    </a>
+                    <div class="card-body text-center p-3">
+                      <h5 class="card-title mb-2">
+                        <a href="{{ product_url }}" class="text-decoration-none text-dark fw-bold">
+                          {{ product.name }}
+                        </a>
+                      </h5>
+                      <p class="card-text text-muted fw-semibold">${{ product.min_price|floatformat_custom }}</p>
+                    </div>
+                  </div>
+                </li>
+              {% endwith %}
+            {% endfor %}
+          </ul>
+        </div>
+      {% else %}
+        <div class="alert alert-warning" role="alert">
+          {% translate "No hemos encontrado ningún producto" %}
+        </div>
+      {% endif %}
+    {% else %}
+      <h2 class="mb-4">{{ title }}</h2>
+      <form method="get" class="d-flex mb-4">
+        <div class="flex-grow-1 me-2">
+          {{ form.query }}
+        </div>
+        <button type="submit" class="btn btn-soft-primary">{% translate "Buscar" %}</button>
+      </form>
+    {% endif %}
+  </div>
+{% endblock %}

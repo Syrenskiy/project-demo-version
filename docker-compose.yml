@@ -1,0 +1,86 @@
+services:
+  rabbitmq:
+    image: rabbitmq:3.13.1-management
+    restart: always
+    ports:
+      - "127.0.0.1:5672:5672"
+      - "127.0.0.1:15672:15672"
+    networks:
+      - backend
+    container_name: rabbitmq
+
+  redis:
+    image: redis:7.2.4
+    restart: always
+    ports:
+      - "127.0.0.1:6379:6379"
+    volumes:
+      - ./data/redis:/data
+    deploy:
+      resources:
+        limits:
+          cpus: '0.3'
+          memory: 128M
+    networks:
+      - backend
+    container_name: redis
+
+  celery:
+    build: .
+    command: celery -A princesscastle worker --loglevel=info -P eventlet
+    restart: always
+    env_file:
+      - ./.env
+    volumes:
+      - .:/app
+      - ./data/celery:/data
+    depends_on:
+      - rabbitmq
+      - redis
+    networks:
+      - backend
+    container_name: celery_worker
+
+  web:
+    build: .
+    command: ["./wait-for-it.sh", "${RDS_ENDPOINT}:5432", "--",
+              "uwsgi", "--ini", "/app/config/uwsgi/uwsgi.ini"]
+    restart: always
+    volumes:
+      - .:/app
+      - ./config/ssl/rds-global-bundle.pem:/etc/ssl/certs/rds-global-bundle.pem
+    env_file:
+      - ./.env
+    depends_on:
+      - rabbitmq
+      - redis
+    expose:
+      - "8000"
+    networks:
+      - backend
+    deploy:
+      resources:
+        limits:
+          cpus: '0.5'
+          memory: 512M
+    container_name: web
+
+  nginx:
+    image: nginx:1.25.5
+    restart: always
+    volumes:
+      - ./config/nginx:/etc/nginx/templates
+      - .:/app
+      - /var/www/certbot:/var/www/certbot:rw
+      - /etc/letsencrypt:/etc/letsencrypt:ro
+      - ./logs/nginx:/var/log/nginx
+    ports:
+      - "80:80"
+      - "443:443"
+    networks:
+      - backend
+    container_name: nginx
+
+networks:
+  backend:
+    driver: bridge

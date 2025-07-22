@@ -1,0 +1,59 @@
+{% extends 'base.html' %}
+{% load i18n %}
+
+{% block content %}
+  <div class="container my-5">
+    <div class="row justify-content-center">
+      <div class="col-md-10 col-lg-8">
+        <div class="card shadow-sm">
+          <div class="card-body text-start mb-2">
+            <h2 class="card-title text-center mb-4">
+              {% translate "Confirmación de pago" %}
+            </h2>
+            <p class="text-center text-muted">
+              {% translate "Proporcione el número de pedido y suba el comprobante, para que podamos empezar a preparar su pedido" %}
+            </p>
+            <form method="post" enctype="multipart/form-data" class="needs-validation" novalidate>
+              {% csrf_token %}
+              {% for field in form %}
+                {% if field.name != 'cf_turnstile_response' %}
+                  <div class="mb-3">
+                    <label for="id_{{ field.name }}" class="form-label">{{ field.label }}</label>
+                    {{ field.as_widget }}
+                    {% if field.errors %}
+                      <div class="invalid-feedback d-block">
+                        {{ field.errors|join:', ' }}
+                      </div>
+                    {% endif %}
+                  </div>
+                {% endif %}
+              {% endfor %}
+
+              {{ form.cf_turnstile_response }}
+
+              <div class="mb-3 cf-turnstile"
+                   data-sitekey="{{ CLOUDFLARE_TURNSTILE_SITE_KEY }}"
+                   data-callback="onSubmitCallback"
+                   data-theme="light">
+              </div>
+              <div class="d-grid">
+                <button type="submit" class="btn btn-soft-primary btn-lg">
+                  {% translate "Enviar" %}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+{% endblock %}
+
+{% block custom_js %}
+  <script src="https://challenges.cloudflare.com/turnstile/v0/api.js" async defer></script>
+  <script>
+    function onSubmitCallback(token) {
+      document.getElementById('id_cf_turnstile_response').value = token;
+    }
+  </script>
+{% endblock %}

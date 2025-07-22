@@ -1,0 +1,15 @@
+# Dockerfile
+FROM python:3.12
+
+WORKDIR /princesscastle
+
+COPY requirements_dev.txt .
+RUN pip install --no-cache-dir -r requirements_dev.txt
+
+COPY . .
+
+RUN apt-get update && apt-get install -y wget
+RUN wget https://raw.githubusercontent.com/vishnubob/wait-for-it/master/wait-for-it.sh
+RUN chmod +x wait-for-it.sh
+
+CMD ["celery", "-A", "princesscastle", "worker", "--loglevel=info", "-P", "eventlet"]

@@ -1,0 +1,170 @@
+{% load custom_filters %}
+
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Confirmación de pedido</title>
+</head>
+<body style="font-family: Arial, sans-serif; background-color: #f5f5f5; margin: 0; padding: 0; color: #333; overflow-x: hidden;">
+
+<div
+  style="width: 100%; max-width: 600px; margin: 0 auto; background-color: #ffffff; border-radius: 8px;">
+  <div style="text-align: center; background-color: #1E87F0; color: #ffffff; padding: 20px 0;">
+    <h2 style="margin: 0;">Nuevo Pedido de Princess Castle</h2>
+    <p style="margin: 0;">Confirmación del pedido</p>
+  </div>
+  <div style="padding: 5px;">
+    <h1 style="font-size: 22px; color: #333;">Detalles del pedido:</h1>
+
+    <table style="width: 100%; border-collapse: collapse; margin-bottom: 20px; box-sizing: border-box;">
+      <tr>
+        <td style="padding: 10px; border-bottom: 1px solid #ccc; background-color: #f0f0f0; font-weight: bold;">Número
+          del pedido
+        </td>
+        <td style="padding: 10px; border-bottom: 1px solid #ccc;">{{ order.id }}</td>
+      </tr>
+      <tr>
+        <td style="padding: 10px; border-bottom: 1px solid #ccc; background-color: #f0f0f0; font-weight: bold;">Recibido
+        </td>
+        <td style="padding: 10px; border-bottom: 1px solid #ccc;">{{ order_created_date }}</td>
+      </tr>
+      <tr>
+        <td style="padding: 10px; border-bottom: 1px solid #ccc; background-color: #f0f0f0; font-weight: bold;">Pagado
+        </td>
+        <td style="padding: 10px; border-bottom: 1px solid #ccc;">{{ order_updated_date }}</td>
+      </tr>
+    </table>
+
+    <h1 style="font-size: 22px; color: #333;">Información del cliente:</h1>
+    <table style="width: 100%; border-collapse: collapse; margin-bottom: 20px; box-sizing: border-box;">
+      <tr>
+        <td style="padding: 10px; border-bottom: 1px solid #ccc; background-color: #f0f0f0; font-weight: bold;">Nombre
+        </td>
+        <td style="padding: 10px; border-bottom: 1px solid #ccc;">{{ order.first_name }}</td>
+      </tr>
+      <tr>
+        <td style="padding: 10px; border-bottom: 1px solid #ccc; background-color: #f0f0f0; font-weight: bold;">
+          Apellido
+        </td>
+        <td style="padding: 10px; border-bottom: 1px solid #ccc;">{{ order.last_name }}</td>
+      </tr>
+      <tr>
+        <td style="padding: 10px; border-bottom: 1px solid #ccc; background-color: #f0f0f0; font-weight: bold;">Correo
+          electrónico
+        </td>
+        <td style="padding: 10px; border-bottom: 1px solid #ccc; word-break: break-all;">{{ order.email }}</td>
+      </tr>
+      <tr>
+        <td style="padding: 10px; border-bottom: 1px solid #ccc; background-color: #f0f0f0; font-weight: bold;">
+          Teléfono
+        </td>
+        <td style="padding: 10px; border-bottom: 1px solid #ccc;">{{ order.phone }}</td>
+      </tr>
+      <tr>
+        <td style="padding: 10px; border-bottom: 1px solid #ccc; background-color: #f0f0f0; font-weight: bold;">
+          Dirección de la entrega
+        </td>
+        <td style="padding: 10px; border-bottom: 1px solid #ccc; overflow-wrap: break-word">
+          {% if order.delivery.cost %}
+            {{ order.address }}
+          {% else %}
+            {{ order.delivery.place }}
+          {% endif %}
+        </td>
+      </tr>
+      <tr>
+        <td style="padding: 10px; border-bottom: 1px solid #ccc; background-color: #f0f0f0; font-weight: bold;">Estado
+        </td>
+        <td style="padding: 10px; border-bottom: 1px solid #ccc;">
+          {% if order.paid_full %}
+            Pagado
+          {% else %}
+            Pagado Parcialmente
+          {% endif %}
+        </td>
+      </tr>
+    </table>
+
+    <div style="margin-top: 20px;">
+      <h2 style="font-size: 20px; color: #333;">Detalles del pedido</h2>
+      <table style="width: 100%; border-collapse: collapse; box-sizing: border-box;">
+        <tr>
+          <th style="text-align: left; padding: 10px; border-bottom: 1px solid #ccc; background-color: #f0f0f0; width: 45%;">
+            Producto
+          </th>
+          <th style="text-align: left; padding: 10px; border-bottom: 1px solid #ccc; background-color: #f0f0f0; width: 25%;">
+            Color
+          </th>
+          <th style="text-align: left; padding: 10px; border-bottom: 1px solid #ccc; background-color: #f0f0f0; width: 10%;">
+            Cant.
+          </th>
+          <th style="text-align: left; padding: 10px; border-bottom: 1px solid #ccc; background-color: #f0f0f0; width: 20%;">
+            Total
+          </th>
+        </tr>
+        {% for item in order.items.all %}
+          <tr>
+            <td style="padding: 10px; border-bottom: 1px solid #ccc; word-break: break-word;">
+              <p>{{ item.product.name }}
+              <p>{% if item.size %}Talla: {{ item.size }}{% endif %}
+              <p>{% if item.quantity %}Piezas: {{ item.quantity }}{% endif %}
+            </td>
+            <td style="padding: 10px; border-bottom: 1px solid #ccc;">{{ item.color }}</td>
+            <td
+              style="padding: 10px; border-bottom: 1px solid #ccc; text-align: center;">{{ item.product_quantity }}</td>
+            <td style="padding: 10px; border-bottom: 1px solid #ccc;">${{ item.get_cost|floatformat_custom }}</td>
+          </tr>
+        {% endfor %}
+      </table>
+      <table style="width: 100%; border-collapse: collapse;">
+        <tr>
+          <td
+            style="text-align: left; font-size: 24px; padding: 15px 0 15px 0; line-height: 1.5; border-bottom: 1px solid #ccc;">
+            <strong>Total</strong></td>
+          <td
+            style="text-align: right; font-size: 24px; padding: 15px 0 15px 0; line-height: 1.5; border-bottom: 1px solid #ccc;">{{ total }}</td>
+        </tr>
+        {% if partial_payment %}
+          <tr>
+            <td
+              style="text-align: left; font-size: 22px; padding: 15px 0 15px 0; line-height: 1.5; border-bottom: 1px solid #ccc;">
+              <strong>Pago parcial</strong></td>
+            <td
+              style="text-align: right; font-size: 22px; padding: 15px 0 15px 0; line-height: 1.5; border-bottom: 1px solid #ccc;">{{ partial_payment }}</td>
+          </tr>
+        {% endif %}
+        <tr>
+          <td style="text-align: left; font-size: 16px; padding: 15px 0 5px 0; line-height: 1.5;">
+            <strong>SubTotal</strong></td>
+          <td style="text-align: right; font-size: 16px; padding: 15px 0 5px 0; line-height: 1.5;">{{ subtotal }}</td>
+        </tr>
+        {% if discount %}
+          <tr>
+            <td style="text-align: left; font-size: 16px; padding: 5px 0 0 0; line-height: 1.5;">
+              <strong>Descuento</strong></td>
+            <td style="text-align: right; font-size: 16px; padding: 5px 0 0 0; line-height: 1.5;">-{{ discount }}</td>
+          </tr>
+          <tr>
+            <td style="text-align: left; font-size: 16px; padding: 5px 0 0 0; line-height: 1.5;"><strong>Cupón
+              utilizado</strong></td>
+            <td style="text-align: right; font-size: 16px; padding: 5px 0 0 0; line-height: 1.5;">"{{ order.coupon }}"
+            </td>
+          </tr>
+        {% endif %}
+        <tr>
+          <td style="text-align: left; font-size: 16px; padding: 5px 0 0 0; line-height: 1.5;"><strong>Costo de
+            entrega</strong></td>
+          <td style="text-align: right; font-size: 16px; padding: 5px 0 0 0; line-height: 1.5;">{{ delivery_cost }}</td>
+        </tr>
+      </table>
+    </div>
+  </div>
+  <div style="text-align: center; padding: 20px; background-color: #f0f0f0; font-size: 14px; color: #888;">
+    <p style="margin: 0;">Princess Castle &copy; {% now "Y" %}</p>
+  </div>
+</div>
+
+</body>
+</html>

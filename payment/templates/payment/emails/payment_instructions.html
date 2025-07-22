@@ -1,0 +1,116 @@
+{% load i18n custom_filters %}
+
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>{% translate "Instrucciones de Pago" %}</title>
+</head>
+<body
+  style="font-family: Arial, sans-serif; background-color: #f5f5f5; margin: 0; padding: 0; color: #333; overflow-x: hidden;">
+
+<div style="width: 100%; max-width: 600px; margin: 0 auto; background-color: #ffffff; border-radius: 8px;">
+  <div style="text-align: center; background-color: #1E87F0; color: #ffffff; padding: 20px 0;">
+    <h2 style="margin: 0;">{% translate "Instrucciones de Pago" %}</h2>
+    <p style="margin: 0;">{% translate "Complete su pago siguiendo las instrucciones a continuación." %}</p>
+  </div>
+  <div style="padding: 20px;">
+    <h1 style="font-size: 22px; color: #333;">{% translate "Hola" %} {{ order.first_name }},</h1>
+    <h2 style="font-size: 18px; color: #333; margin-top: 20px;">{% translate "Detalles del pedido" %}</h2>
+    <table style="width: 100%; border-collapse: collapse; margin-bottom: 20px; box-sizing: border-box;">
+      <tr>
+        <td style="padding: 10px; border-bottom: 1px solid #ccc; background-color: #f0f0f0; font-weight: bold;">
+          {% translate "Número de pedido" %}
+        </td>
+        <td style="padding: 10px; border-bottom: 1px solid #ccc;">{{ order.id }}</td>
+      </tr>
+      <tr>
+        <td style="padding: 10px; border-bottom: 1px solid #ccc; background-color: #f0f0f0; font-weight: bold;">
+          {% translate "Total a pagar" %}
+        </td>
+        <td style="padding: 10px; border-bottom: 1px solid #ccc;">
+          {% if order.partial_payment %}
+            ${{ order.get_total_cost_with_partial_payment|floatformat_custom }}
+          {% else %}
+            ${{ order.get_total_cost|floatformat_custom }}
+          {% endif %}
+        </td>
+      </tr>
+    </table>
+    {% if order.partial_payment %}
+      <p style="font-size: 14px; color: #055160;">
+        {% translate "Usted eligió pago parcial, el resto se pagará en la entrega." %}
+      </p>
+    {% endif %}
+    <h2 style="font-size: 18px; color: #333; margin-top: 20px;">{% translate "Métodos de pago" %}</h2>
+    <div style="margin: 20px 0; border-radius: 8px; overflow: hidden; box-shadow: 0 2px 8px rgba(0,0,0,0.1);">
+      <div style="padding: 5px 10px; background-color: #f8f9fa; border-bottom: 1px solid #e9ecef;">
+        <div style="display: flex; align-items: center; margin: 10px 0;">
+          <div
+            style="width: 32px; height: 32px; display: flex; align-items: center; justify-content: center; margin-right: 15px; margin-top: 10px;">
+            <span style="color: white; font-size: 16px;">💳</span>
+          </div>
+          <span style="font-weight: 500; color: #212529;">
+                {% translate "Pago por transferencia bancaria" %}
+            </span>
+        </div>
+      </div>
+
+      <div style="padding: 5px 10px; background-color: #f8f9fa;">
+        <div style="display: flex; align-items: center; margin: 10px 0;">
+          <div
+            style="width: 32px; height: 32px; display: flex; align-items: center; justify-content: center; margin-right: 15px; margin-top: 10px;">
+            <span style="color: white; font-size: 16px;">💵</span>
+          </div>
+          <span style="font-weight: 500; color: #212529;">
+                {% translate "Pago en efectivo en OXXO o tiendas de conveniencia" %}
+            </span>
+        </div>
+      </div>
+    </div>
+
+    <h2 style="font-size: 18px; color: #333; margin-top: 20px;">{% translate "Detalles de pago" %}</h2>
+    <table style="width: 100%; border-collapse: collapse; margin-bottom: 20px; box-sizing: border-box;">
+      <tr>
+        <td style="padding: 10px; border-bottom: 1px solid #ccc; background-color: #f0f0f0; font-weight: bold;">
+          {% translate "Tarjeta" %}
+        </td>
+        <td style="padding: 10px; border-bottom: 1px solid #ccc;">{{ card }}</td>
+      </tr>
+      <tr>
+        <td style="padding: 10px; border-bottom: 1px solid #ccc; background-color: #f0f0f0; font-weight: bold;">
+          {% translate "Titular" %}
+        </td>
+        <td style="padding: 10px; border-bottom: 1px solid #ccc;">{{ name }}</td>
+      </tr>
+      <tr>
+        <td style="padding: 10px; border-bottom: 1px solid #ccc; background-color: #f0f0f0; font-weight: bold;">
+          {% translate "Banco" %}
+        </td>
+        <td style="padding: 10px; border-bottom: 1px solid #ccc;">{{ bank }}</td>
+      </tr>
+    </table>
+
+    <p style="color: #ddb13f; margin-top: 20px;">
+      {% translate "Su pedido comenzará a prepararse una vez que recibamos la confirmación del pago." %}
+    </p>
+
+    <h2 style="font-size: 18px; color: #333;">{% translate "Confirmación de pago" %}</h2>
+    <p>{% translate "Después de realizar el pago, cargue una foto del comprobante o captura de pantalla de la transferencia." %}</p>
+
+    <div style="text-align: center; margin-top: 40px;">
+      <a href="{{ payment_confirmation_link }}"
+         style="background-color: #1E87F0; color: #ffffff; padding: 10px 20px; text-decoration: none; border-radius: 5px;">
+        {% translate "Subir comprobante" %}
+      </a>
+    </div>
+  </div>
+  <div
+    style="text-align: center; margin-top: 20px; padding: 20px; background-color: #f0f0f0; font-size: 14px; color: #888;">
+    <p style="margin: 0;">Princess Castle &copy; {% now "Y" %}</p>
+  </div>
+</div>
+
+</body>
+</html>

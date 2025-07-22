@@ -1,0 +1,95 @@
+{% extends 'base.html' %}
+{% load i18n static %}
+{% block content %}
+  <div class="container my-4">
+    <h2 class="mb-4">{{ title }}</h2>
+
+    {% if messages %}
+      <div class="alert-container">
+        {% for message in messages %}
+          <div class="alert {{ message.tags }} alert-dismissible fade show" role="alert">
+            {{ message }}
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+          </div>
+        {% endfor %}
+      </div>
+    {% endif %}
+
+    <!-- Контейнер для фото профиля и кнопок -->
+    <div class="d-flex justify-content-between mb-4">
+      <!-- Фото профиля -->
+      <div class="profile-photo d-flex flex-column">
+        {% if user.photo %}
+          <img src="{{ user.photo_profile.url }}" alt="{% translate 'Foto de perfil' %}" style="max-width: 150px;">
+        {% else %}
+          <img src="{% static 'products/images/svg/default.svg' %}" alt="{% translate 'Foto predeterminada' %}"
+               style="width: 150px;">
+        {% endif %}
+      </div>
+
+      <!-- Кнопки справа -->
+      <div class="profile-buttons d-flex flex-column justify-content-end align-items-end gap-2">
+        <form action="{% url 'users:purchase_history' %}">
+          <button type="submit" class="btn btn-outline-soft-danger btn-lg">{% translate 'Mis Pedidos' %}</button>
+        </form>
+
+        {% if has_uncommented_items %}
+          <form action="{% url 'users:comments' %}">
+            <button type="submit"
+                    class="btn btn-outline-soft-primary btn-lg">{% translate 'Dejar comentarios' %}</button>
+          </form>
+        {% endif %}
+      </div>
+    </div>
+
+
+    <!-- Остальная часть формы -->
+    <div class="card mb-4 shadow-sm">
+      <div class="card-body">
+        <form method="post" enctype="multipart/form-data" class="needs-validation" novalidate>
+          {% csrf_token %}
+          <!-- Поля формы -->
+          <div class="row g-3 text-start">
+            {% for field in form %}
+              <div class="col-md-6">
+                <div class="mb-2">
+                  <label for="id_{{ field.name }}" class="form-label">{{ field.label }}</label>
+
+                  {% if field.name == "date_birth" and user.date_birth %}
+                    <!-- Если дата рождения уже указана -->
+                    <div class="form-control bg-light-gray">{{ user.date_birth|date:"d/m/Y" }}</div>
+                  {% else %}
+                    <!-- Поле для ввода -->
+                    {{ field.as_widget }}
+                  {% endif %}
+
+                  {% if field.errors %}
+                    <div class="invalid-feedback d-block">
+                      {{ field.errors|join:', ' }}
+                    </div>
+                  {% endif %}
+                </div>
+              </div>
+            {% endfor %}
+          </div>
+          <div class="text-center mt-4">
+            <button type="submit" class="btn btn-soft-primary w-100">{% translate 'Guardar' %}</button>
+          </div>
+        </form>
+      </div>
+    </div>
+    <div class="mb-4">
+      <form method="post" action="{% url 'users:logout' %}">
+        {% csrf_token %}
+        <button type="submit" class="btn btn-soft-danger w-100">{% translate 'Cerrar sesión' %}</button>
+      </form>
+    </div>
+
+    {% if not perms.users.social_auth %}
+      <div class="text-center mb-4">
+        <a href="{% url 'users:password_change' %}" class="btn btn-link">{% translate 'Cambiar contraseña' %}</a>
+      </div>
+    {% endif %}
+  </div>
+
+{% endblock %}

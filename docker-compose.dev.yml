@@ -1,0 +1,94 @@
+services:
+  rabbitmq:
+    image: rabbitmq:3.13.1-management
+    ports:
+      - "5672:5672"
+      - "15672:15672"
+    networks:
+      - dev_network
+    healthcheck:
+      test: [ "CMD", "rabbitmq-diagnostics", "status" ]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+    container_name: rabbitmq
+
+  redis:
+    image: redis:7.2.4
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    networks:
+      - dev_network
+    healthcheck:
+      test: [ "CMD", "redis-cli", "ping" ]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+    container_name: redis
+
+  celery:
+    build:
+      context: .
+      dockerfile: Dockerfile.dev
+    command: celery -A princesscastle worker --loglevel=info -P eventlet
+    env_file:
+      - .env
+    volumes:
+      - .:/princesscastle
+    depends_on:
+      rabbitmq:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    networks:
+      - dev_network
+    container_name: celery_worker
+
+  web:
+    build:
+      context: .
+      dockerfile: Dockerfile.dev
+    ports:
+      - "8000:8000"
+    volumes:
+      - .:/princesscastle
+    env_file:
+      - .env
+    depends_on:
+      rabbitmq:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      postgres:
+        condition: service_healthy
+    networks:
+      - dev_network
+    command: ["python", "manage.py", "runserver", "0.0.0.0:8000", "--noreload"]
+    container_name: web
+
+  postgres:
+    image: postgres:17.2
+    env_file:
+      - .env
+    ports:
+      - "5432:5432"
+    networks:
+      - dev_network
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: [ "CMD-SHELL", "pg_isready -U $$POSTGRES_USER -d $$POSTGRES_DB" ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    container_name: postgres
+
+networks:
+  dev_network:
+    driver: bridge
+
+volumes:
+  redis_data:
+  postgres_data:

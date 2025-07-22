@@ -1,0 +1,92 @@
+# upstream for uWSGI
+upstream uwsgi_app {
+    server unix:/app/uwsgi_app.sock;
+}
+
+limit_req_zone $binary_remote_addr zone=req_limit:10m rate=10r/s;
+
+server {
+    listen              80;
+    server_name         www.princess-castle.com princess-castle.com;
+
+    # Allow access only for certificate verification
+    location ^~ /.well-known/acme-challenge/ {
+        root /var/www/certbot;
+        allow all;
+        default_type "text/plain";
+    }
+
+    # All other requests are redirected to HTTPS
+    location / {
+        return 301 https://$host$request_uri;
+    }
+}
+
+server {
+    listen              443 ssl;
+    ssl_certificate     /etc/letsencrypt/live/princess-castle.com/fullchain.pem;
+    ssl_certificate_key /etc/letsencrypt/live/princess-castle.com/privkey.pem;
+    ssl_protocols TLSv1.2 TLSv1.3;
+    ssl_prefer_server_ciphers on;
+    ssl_ciphers ECDHE-ECDSA-AES128-GCM-SHA256:ECDHE-RSA-AES128-GCM-SHA256;
+    ssl_ecdh_curve secp384r1;
+    ssl_session_cache shared:SSL:10m;
+    ssl_session_timeout 10m;
+    server_name         www.princess-castle.com princess-castle.com;
+    error_log           stderr warn;
+    access_log          /dev/stdout main;
+
+    # Protection from bots
+    if ($http_user_agent ~* (wpscan|nikto|sqlmap|zgrab|python-requests|Keydrop|Sogou|Java|curl|wget|Go-http-client|Scrapy|httpx|libwww-perl)) {
+        return 444;
+    }
+
+    # Blocking unwanted URLs
+    location ~* (eval\(|base64_decode\(|etc/passwd|self/environ|scripts/setup.php) {
+        deny all;
+        return 444;
+    }
+
+    # Block all WordPress paths (including subdirectories)
+    location ~* ^/(wp-admin|wp-includes|wp-login\.php|xmlrpc\.php|wlwmanifest\.xml) {
+        deny all;
+        return 444;
+    }
+
+    # Block access to hidden files and folders
+    location ~ /(\.|config\.php|backup|\.env|\.git) {
+    deny all;
+    return 444;
+    }
+
+    # Blocking popular vulnerabilities (added Agile, actuator)
+    location ~* ^/(Agile|actuator|\.env|phpmyadmin) {
+        deny all;
+        return 444;
+    }
+
+    # Request rate limit
+    location / {
+        limit_req zone=req_limit burst=10 nodelay;
+        include /etc/nginx/uwsgi_params;
+        uwsgi_pass uwsgi_app;
+    }
+
+    location /update-price/ {
+        limit_req zone=req_limit burst=20 nodelay;
+        include /etc/nginx/uwsgi_params;
+        uwsgi_pass uwsgi_app;
+    }
+
+    add_header X-Content-Type-Options "nosniff" always;
+    add_header X-Frame-Options "SAMEORIGIN" always;
+    add_header X-XSS-Protection "1; mode=block" always;
+    add_header Referrer-Policy "strict-origin-when-cross-origin" always;
+    add_header Content-Security-Policy "default-src 'self' https://princesscastle-static.s3.amazonaws.com; script-src 'self' 'unsafe-inline' https://princesscastle-static.s3.amazonaws.com https://cdn.jsdelivr.net https://cdnjs.cloudflare.com https://challenges.cloudflare.com https://static.cloudflareinsights.com https://*.google.com https://*.gstatic.com; frame-src https://*.google.com https://challenges.cloudflare.com; style-src 'self' 'unsafe-inline' https://princesscastle-static.s3.amazonaws.com https://cdn.jsdelivr.net https://cdnjs.cloudflare.com; img-src 'self' data: https://princesscastle-static.s3.amazonaws.com https://*.google.com https://*.gstatic.com; font-src 'self' data: https://princesscastle-static.s3.amazonaws.com https://cdn.jsdelivr.net https://cdnjs.cloudflare.com; object-src 'none';" always;
+
+    # Redirect to the main locale
+    location = / {
+        	return 302 https://princess-castle.com/es/;
+        	try_files $uri $uri/ =444;
+    }
+}

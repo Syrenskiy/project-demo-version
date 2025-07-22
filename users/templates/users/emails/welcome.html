@@ -1,0 +1,29 @@
+{% load i18n %}
+
+<!DOCTYPE html>
+<html lang="{% get_current_language as LANGUAGE_CODE %}{{ LANGUAGE_CODE }}">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Princess Castle</title>
+</head>
+<body
+  style="font-family: Arial, sans-serif; background-color: #f5f5f5; margin: 0; padding: 0; color: #333; overflow-x: hidden;">
+
+<div
+  style="width: 100%; max-width: 600px; margin: 0 auto; background-color: #ffffff; border-radius: 8px;">
+  <div style="text-align: center; background-color: #1E87F0; color: #ffffff; padding: 20px 0;">
+    <h2 style="margin: 0;">{% translate "Registro exitoso!" %}</h2>
+  </div>
+  <div style="padding: 10px;">
+    <p style="font-size: 16px; line-height: 1.5;">
+      {% translate "Bienvenido(a) a la familia Princess Castle!" %}
+    </p>
+  </div>
+  <div style="text-align: center; padding: 20px; background-color: #f0f0f0; font-size: 14px; color: #888;">
+    <p style="margin: 0;">Princess Castle &copy; {% now "Y" %}</p>
+  </div>
+</div>
+
+</body>
+</html>

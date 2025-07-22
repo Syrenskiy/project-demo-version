@@ -1,0 +1,168 @@
+{% extends "admin/base_site.html" %}
+{% load custom_filters %}
+
+{% block title %}
+  Pedido {{ order.id }} {{ block.super }}
+{% endblock %}
+
+{% block breadcrumbs %}
+  <div class="breadcrumbs">
+    <a href="{% url "admin:index" %}">Home</a> &rsaquo;
+    <a href="{% url "admin:orders_order_changelist" %}">Orders</a>
+    &rsaquo;
+    <a href="{% url "admin:orders_order_change" order.id %}">Order {{ order.id }}</a>
+    &rsaquo; Detail
+  </div>
+{% endblock %}
+
+{% block content %}
+  <div class="module">
+    <h1>Pedido {{ order.id }}</h1>
+    <ul class="object-tools">
+      <li>
+        <a href="#" onclick="window.print();">
+          Imprimir la Orden
+        </a>
+      </li>
+    </ul>
+    <table>
+      <tr>
+        <th>Fecha de creación</th>
+        <td>{{ order.created }}</td>
+      </tr>
+      <tr>
+        <th>Cliente</th>
+        <td>{{ order.first_name }} {{ order.last_name }}</td>
+      </tr>
+      <tr>
+        <th>Correo electrónico</th>
+        <td><a href="mailto:{{ order.email }}">{{ order.email }}</a></td>
+      </tr>
+      <tr>
+        <th>Teléfono</th>
+        <td>{{ order.phone }}</td>
+      </tr>
+      <tr>
+        <th>Entrega</th>
+        {% if order.delivery.place == 'A Domicilio' %}
+          <td>{{ order.address }}</td>
+        {% else %}
+          <td>{{ order.delivery }}</td>
+        {% endif %}
+      </tr>
+      <tr>
+        <th>Total</th>
+        <td>${{ order.get_total_cost|floatformat_custom }}</td>
+      </tr>
+      <tr>
+        <th>Estado</th>
+        <td>
+          {% if order.paid %}
+            {% if order.partial_payment and not order.paid_full %}
+              Pagado Parcialmente
+            {% else %}
+              Pagado Completo
+            {% endif %}
+          {% else %}
+            Pendiente de pago
+          {% endif %}
+        </td>
+      </tr>
+      {% if order.paid and order.partial_payment and not order.paid_full %}
+        <tr>
+          <th>Pagado</th>
+          <td>${{ order.get_total_cost_with_partial_payment|floatformat_custom }}</td>
+        </tr>
+      {% endif %}
+    </table>
+  </div>
+  <div class="module">
+    <h2>Artículos comprados</h2>
+    <table style="width:100%">
+      <thead>
+      <tr>
+        <th>Producto</th>
+        <th>Precio</th>
+        <th>Cantidad</th>
+        <th>Total</th>
+      </tr>
+      </thead>
+      <tbody>
+      {% for item in order.items.all %}
+        <tr class="row{% cycle "1" "2" %}">
+          <td>
+            {{ item.product.name }}, Color: {{ item.color }}
+            {% if item.size %}, Talla: {{ item.size }}{% endif %}
+            {% if item.quantity %}, Piezas: {{ item.quantity }}{% endif %}
+          </td>
+          <td class="num">${{ item.price|floatformat_custom }}</td>
+          <td class="num">{{ item.product_quantity }}</td>
+          <td class="num">${{ item.get_cost|floatformat_custom }}</td>
+        </tr>
+      {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  <div class="module">
+    <h2>Total</h2>
+    <table style="width:100%">
+      <thead>
+      <tr>
+        <th>Resumen</th>
+        <th>Precio</th>
+      </tr>
+      </thead>
+      <tbody>
+      {% if order.coupon %}
+        <tr class="subtotal">
+          <td>SubTotal</td>
+          <td class="num">
+            ${{ order.get_total_cost_before_discount|floatformat_custom }}
+          </td>
+        </tr>
+        <tr>
+          <td>
+            Cupón "{{ order.coupon.code }}"
+            (-{{ order.discount }}%)
+          </td>
+          <td class="num neg">
+            -${{ order.get_discount|floatformat_custom }}
+          </td>
+        </tr>
+      {% endif %}
+      <tr>
+        <td>Entrega</td>
+        <td class="num">${{ order.delivery.cost|floatformat_custom }}</td>
+      </tr>
+      <tr class="total">
+        <td><strong>Total</strong></td>
+        <td class="num"><strong>${{ order.get_total_cost|floatformat_custom }}</strong></td>
+      </tr>
+      {% if order.paid %}
+        {% if order.partial_payment %}
+          <tr>
+            <td><strong>Pagado</strong></td>
+            <td class="num"><strong>${{ order.get_total_cost_with_partial_payment|floatformat_custom }}</strong></td>
+          </tr>
+          <tr>
+            {% if order.paid_full %}
+              <td style="color: #45a049;"><strong>Segundo Pago Completado</strong></td>
+              <td class="num" style="color: #45a049;">
+                <strong>${{ order.get_total_cost_with_partial_payment|floatformat_custom }}</strong></td>
+            {% else %}
+              <td style="color: red;"><strong>Pendiente de Pago</strong></td>
+              <td class="num" style="color: red;">
+                <strong>${{ order.get_total_cost_with_partial_payment|floatformat_custom }}</strong></td>
+            {% endif %}
+          </tr>
+        {% endif %}
+      {% else %}
+        <tr>
+          <td style="color: red;"><strong>Pendiente de Pago</strong></td>
+          <td class="num" style="color: red;"><strong>${{ order.get_total_cost|floatformat_custom }}</strong></td>
+        </tr>
+      {% endif %}
+      </tbody>
+    </table>
+  </div>
+{% endblock %}

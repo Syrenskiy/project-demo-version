@@ -1,0 +1,158 @@
+{% extends 'base.html' %}
+
+{% block custom_styles %}
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons/font/bootstrap-icons.css" rel="stylesheet">
+  <style>
+      .privacy-header {
+          border-bottom: 2px solid #dee2e6;
+          padding-bottom: 1rem;
+      }
+
+      .section-card {
+          border: none;
+          border-radius: 15px;
+          box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15);
+      }
+
+      .definition-list li {
+          padding-left: 1.5rem;
+          text-indent: -1.5rem;
+      }
+
+      ul {
+          list-style: none;
+          padding-left: 0;
+      }
+  </style>
+{% endblock %}
+
+{% block content %}
+  <div class="container py-5">
+    <!-- Header Section -->
+    <div class="privacy-header mb-5">
+      <h1 class="display-4 fw-bold text-center mb-3">Política de Privacidad</h1>
+      <p class="lead text-center text-muted">Última actualización: 13 de febrero de 2025</p>
+    </div>
+
+    <!-- Introduction Card -->
+    <div class="card section-card mb-5">
+      <div class="card-body">
+        <p class="card-text">Esta Política de Privacidad describe nuestras políticas y procedimientos sobre la
+          recopilación, uso y divulgación de su información cuando utiliza el Servicio y le informa sobre sus derechos
+          de privacidad y cómo la ley lo protege.</p>
+
+        <div class="alert alert-info mt-4">
+          <i class="bi bi-info-circle-fill me-2"></i>
+          Usamos sus datos personales para proporcionar y mejorar el Servicio. Al utilizar el Servicio, usted acepta la
+          recopilación y el uso de información de acuerdo con esta Política de Privacidad.
+        </div>
+      </div>
+    </div>
+
+    <!-- Interpretation Section -->
+    <div class="card section-card mb-5">
+      <div class="card-body">
+        <h2 class="fw-bold mb-4">Interpretación y Definiciones</h2>
+
+        <h3 class="mt-4 mb-3">Interpretación</h3>
+        <p>Las palabras cuya letra inicial está en mayúscula tienen significados definidos bajo las siguientes
+          condiciones. Estas definiciones tendrán el mismo significado independientemente de que aparezcan en singular o
+          en plural.</p>
+
+        <h3 class="mt-5 mb-3">Definiciones</h3>
+        <p>A los efectos de esta Política de Privacidad:</p>
+        <ul class="definition-list">
+          <li class="mb-3">
+            <i class="bi bi-chevron-right text-primary me-2"></i>
+            <strong>Cuenta</strong> - significa una cuenta única creada para que usted acceda a nuestro Servicio o a
+            partes de nuestro Servicio.
+          </li>
+          <li class="mb-3">
+            <i class="bi bi-chevron-right text-primary me-2"></i>
+            <strong>Afiliado</strong> - significa una entidad que controla, es controlada por o está bajo el control
+            común de una parte...
+          </li>
+        </ul>
+      </div>
+    </div>
+
+    <!-- Data Collection Section -->
+    <div class="card section-card mb-5">
+      <div class="card-body">
+        <h2 class="fw-bold mb-4">Recopilación y Uso de sus Datos Personales</h2>
+
+        <h3 class="mt-4 mb-3">Tipos de Datos Recopilados</h3>
+
+        <div class="bg-light p-4 rounded-3 mb-4">
+          <h4 class="fw-bold"><i class="bi bi-person-badge me-2"></i>Datos Personales</h4>
+          <p>Mientras utiliza nuestro Servicio, podemos solicitarle que nos proporcione cierta información de
+            identificación personal.</p>
+          <ul class="list-unstyled">
+            <li><i class="bi bi-check2-circle text-success me-2"></i>Dirección de correo electrónico</li>
+            <li><i class="bi bi-check2-circle text-success me-2"></i>Nombre y apellido</li>
+            <li><i class="bi bi-check2-circle text-success me-2"></i>Número de teléfono</li>
+          </ul>
+        </div>
+
+        <div class="bg-light p-4 rounded-3">
+          <h4 class="fw-bold"><i class="bi bi-pc-display-horizontal me-2"></i>Datos de Uso</h4>
+          <p>Los datos de uso se recopilan automáticamente al utilizar el Servicio.</p>
+          <div class="row g-3">
+            <div class="col-md-6">
+              <div class="card bg-white h-100">
+                <div class="card-body">
+                  <h5><i class="bi bi-gear-wide-connected text-primary me-2"></i>Información del Dispositivo</h5>
+                  <p class="mb-0">Dirección IP, tipo de navegador, identificadores de dispositivo</p>
+                </div>
+              </div>
+            </div>
+            <div class="col-md-6">
+              <div class="card bg-white h-100">
+                <div class="card-body">
+                  <h5><i class="bi bi-graph-up text-primary me-2"></i>Seguimiento de Actividad</h5>
+                  <p class="mb-0">Páginas visitadas, tiempo de permanencia, interacciones</p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Cookies Section -->
+    <div class="card section-card mb-5">
+      <div class="card-body">
+        <h3 class="fw-bold mb-4"><i class="bi bi-cookie me-2"></i>Tecnologías de Seguimiento y Cookies</h3>
+        <div class="row g-4">
+          <div class="col-md-6">
+            <div class="card h-100 border-primary">
+              <div class="card-body">
+                <h5><i class="bi bi-shield-check text-primary me-2"></i>Cookies Esenciales</h5>
+                <p class="card-text">Necesarias para el funcionamiento básico del sitio web</p>
+              </div>
+            </div>
+          </div>
+          <div class="col-md-6">
+            <div class="card h-100 border-primary">
+              <div class="card-body">
+                <h5><i class="bi bi-clock-history text-primary me-2"></i>Cookies de Preferencia</h5>
+                <p class="card-text">Recuerdan sus configuraciones y preferencias</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Contact Section -->
+    <div class="card section-card border-primary">
+      <div class="card-body text-center bg-light">
+        <h3 class="fw-bold mb-4">Contáctenos</h3>
+        <p class="lead text-muted mb-4">¿Tiene preguntas sobre nuestra Política de Privacidad?</p>
+        <a href="mailto:princesscastle.mexico@gmail.com" class="btn btn-lg btn-primary">
+          <i class="bi bi-envelope me-2"></i>Contáctenos
+        </a>
+      </div>
+    </div>
+  </div>
+{% endblock %}

@@ -1,0 +1,24 @@
+from django.contrib.auth import get_user_model
+from django.contrib.auth.backends import BaseBackend
+
+
+class EmailAuthBackend(BaseBackend):
+    """Custom authentication backend allowing users to log in with their email and password."""
+    def authenticate(self, request, username=None, password=None, **kwargs):
+        """Authenticate the user based on email and password."""
+        user_model = get_user_model()
+        try:
+            user = user_model.objects.get(email=username)
+            if user.check_password(password):
+                return user
+            return None
+        except (user_model.DoesNotExist, user_model.MultipleObjectsReturned):
+            return None
+
+    def get_user(self, user_id):
+        """Retrieve a user instance by their ID."""
+        user_model = get_user_model()
+        try:
+            return user_model.objects.get(pk=user_id)
+        except user_model.DoesNotExist:
+            return None

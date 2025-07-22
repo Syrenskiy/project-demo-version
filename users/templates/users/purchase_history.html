@@ -1,0 +1,96 @@
+{% extends 'base.html' %}
+{% load i18n custom_filters %}
+
+{% block content %}
+  <div class="container my-4">
+    <h2 class="mb-4">{{ title }}</h2>
+
+    <div class="order-history">
+      {% if orders %}
+        {% for order in orders %}
+          <div class="card shadow-sm mb-4">
+            <div class="card-header bg-soft-primary text-white">
+              <div class="d-flex justify-content-between align-items-center">
+                <span><strong>{% translate "Pedido" %}</strong> #{{ order.id }}</span>
+                <span>{{ order.created|date:"d M Y" }}</span>
+              </div>
+            </div>
+            <div class="card-body">
+              <p class="text-start">
+                                <span
+                                  class="fs-6 badge {% if order.paid_full %}bg-success{% else %}bg-warning text-dark{% endif %} align-self-center">
+              {% if order.paid_full %}
+                {% translate "Pagado" %}
+              {% else %}
+                {% translate "Parcialmente Pagado" %}
+              {% endif %}
+            </span>
+              </p>
+              <div class="row g-3">
+                {% for item in order.items.all %}
+                  <div class="col-12 col-md-6 col-lg-4">
+                    <div class="card h-100">
+                      <div class="row g-0">
+                        <div class="col-4 col-md-4">
+                          <a href="{{ item.product.get_absolute_url }}">
+                            <img src="{{ item.product.image_3x4_120x160.url }}"
+                                 class="rounded m-2" alt="Imagen">
+                          </a>
+                        </div>
+                        <div class="col-8 col-md-8">
+                          <div class="card-body text-start mx-3 py-2 align-items-center">
+                            <h5 class="card-title">{{ item.product }}</h5>
+                            <p class="mb-1"><strong>{% translate "Color" %}:</strong> {{ item.color }}</p>
+                            {% if item.size %}
+                              <p class="mb-1"><strong>{% translate "Talla" %}:</strong> {{ item.size }}</p>
+                            {% endif %}
+                            {% if item.quantity %}
+                              <p class="mb-1"><strong>{% translate "Piezas" %}:</strong> {{ item.quantity }}</p>
+                            {% endif %}
+                            <p class="mb-1"><strong>{% translate "Cantidad" %}:</strong> {{ item.product_quantity }}</p>
+                            <p class="mb-0 align-self-end"><strong>{% translate "Precio" %}:</strong>
+                              ${{ item.price|floatformat_custom }}
+                            </p>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                {% endfor %}
+              </div>
+
+              <!-- Итоги заказа -->
+              <div class="mt-4 p-3 bg-light rounded text-end">
+                <p class="mb-1"><strong>{% translate "SubTotal" %}:</strong>
+                  ${{ order.get_total_cost_before_discount|floatformat_custom }}</p>
+                {% if order.coupon %}
+                  <p class="mb-1"><strong>{% translate "Cupón" %}:</strong>
+                    -${{ order.get_discount|floatformat_custom }}</p>
+                {% endif %}
+                <p class="mb-1"><strong>{% translate "Costo de entrega" %}:</strong>
+                  ${{ order.delivery.cost|floatformat_custom }}</p>
+                <p class="fs-5 mb-1"><strong>{% translate "Total" %}:</strong>
+                  <span>${{ order.get_total_cost|floatformat_custom }}</span>
+                </p>
+                {% if order.partial_payment and not order.paid_full %}
+                  <p class="mb-0 text-warning"><strong>{% translate "Pagado" %}:</strong>
+                    <span
+                      class="text-warning"> ${{ order.get_total_cost_with_partial_payment|floatformat_custom }}</span>
+                  </p>
+                {% endif %}
+              </div>
+            </div>
+          </div>
+        {% endfor %}
+      {% else %}
+        <div class="alert alert-info text-center">
+          {% translate "No has realizado ningún pedido aún." %}
+        </div>
+      {% endif %}
+    </div>
+  </div>
+{% endblock %}
+
+{% block pagination %}
+  {% include "products/includes/pagination.html" %}
+{% endblock %}

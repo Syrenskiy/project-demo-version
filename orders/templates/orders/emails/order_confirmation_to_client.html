@@ -1,0 +1,105 @@
+{% load i18n custom_filters %}
+
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>{% translate "Confirmación de pedido" %}</title>
+</head>
+<body style="font-family: Arial, sans-serif; background-color: #f5f5f5; margin: 0; padding: 0; color: #333; overflow-x: hidden;">
+
+<div
+  style="width: 100%; max-width: 600px; margin: 0 auto; background-color: #ffffff; border-radius: 8px;">
+  <div style="text-align: center; background-color: #1E87F0; color: #ffffff; padding: 20px 0;">
+    <h2 style="margin: 0;">{% translate "Gracias por usar Princess Castle" %}</h2>
+    <p style="margin: 0;">{% translate "Confirmación de su pedido" %}</p>
+  </div>
+  <div style="padding: 10px;">
+    <h1 style="font-size: 22px; color: #333;">{% translate "Hola" %} {{ order.first_name }},</h1>
+    <p
+      style="font-size: 16px; line-height: 1.5;">{% translate "Gracias por su pedido número" %} {{ order.id }} {% translate "realizado el" %}
+      {{ order_created_date }}.</p>
+    <p style="font-size: 16px; line-height: 1.5;">{% translate "Dirección de la entrega:" %}
+      {% if order.delivery.cost %}
+      {{ order.address }}
+      {% else %}
+      {{ order.delivery.place }}
+      {% endif %}
+    </p>
+    <div style="margin-top: 20px;">
+      <h2 style="font-size: 18px; color: #333;">{% translate "Detalles del pedido" %}</h2>
+      <table style="width: 100%; border-collapse: collapse; box-sizing: border-box;">
+        <tr>
+          <th style="text-align: left; padding: 10px; border-bottom: 1px solid #ccc; background-color: #f0f0f0; width: 45%;">
+            {% translate "Producto" %}
+          </th>
+          <th style="text-align: left; padding: 10px; border-bottom: 1px solid #ccc; background-color: #f0f0f0; width: 25%;">
+            {% translate "Color" %}
+          </th>
+          <th style="text-align: left; padding: 10px; border-bottom: 1px solid #ccc; background-color: #f0f0f0; width: 10%;">
+            {% translate "Cant." %}
+          </th>
+          <th style="text-align: left; padding: 10px; border-bottom: 1px solid #ccc; background-color: #f0f0f0; width: 20%;">
+            {% translate "Total" %}
+          </th>
+        </tr>
+        {% for item in order.items.all %}
+          <tr>
+            <td style="padding: 10px; border-bottom: 1px solid #ccc; word-break: break-word;">
+              <p>{{ item.product.name }}
+              <p>{% if item.size %}{% translate "Talla" %}: {{ item.size }}{% endif %}
+              <p>{% if item.quantity %}{% translate "Piezas" %}: {{ item.quantity }}{% endif %}
+            </td>
+            <td style="padding: 10px; border-bottom: 1px solid #ccc;">{{ item.color }}</td>
+            <td
+              style="padding: 10px; border-bottom: 1px solid #ccc; text-align: center;">{{ item.product_quantity }}</td>
+            <td style="padding: 10px; border-bottom: 1px solid #ccc;">${{ item.get_cost|floatformat_custom }}</td>
+          </tr>
+        {% endfor %}
+      </table>
+      <table style="width: 100%; border-collapse: collapse;">
+        <tr>
+          <td
+            style="text-align: left; font-size: 24px; padding: 15px 0 15px 0; line-height: 1.5; border-bottom: 1px solid #ccc;">
+            <strong>{% translate "Total" %}</strong></td>
+          <td
+            style="text-align: right; font-size: 24px; padding: 15px 0 15px 0; line-height: 1.5; border-bottom: 1px solid #ccc;">{{ total }}</td>
+        </tr>
+        {% if partial_payment %}
+          <tr>
+            <td
+              style="text-align: left; font-size: 22px; padding: 15px 0 15px 0; line-height: 1.5; border-bottom: 1px solid #ccc;">
+              <strong>{% translate "Pago parcial" %}</strong></td>
+            <td
+              style="text-align: right; font-size: 22px; padding: 15px 0 15px 0; line-height: 1.5; border-bottom: 1px solid #ccc;">{{ partial_payment }}</td>
+          </tr>
+        {% endif %}
+        <tr>
+          <td style="text-align: left; font-size: 16px; padding: 15px 0 5px 0; line-height: 1.5;">
+            <strong>{% translate "SubTotal" %}</strong></td>
+          <td style="text-align: right; font-size: 16px; padding: 15px 0 5px 0; line-height: 1.5;">{{ subtotal }}</td>
+        </tr>
+        {% if discount %}
+          <tr>
+            <td style="text-align: left; font-size: 16px; padding: 5px 0 0 0; line-height: 1.5;">
+              <strong>{% translate "Descuento" %}</strong></td>
+            <td style="text-align: right; font-size: 16px; padding: 5px 0 0 0; line-height: 1.5; color: green;">
+              -{{ discount }}</td>
+          </tr>
+        {% endif %}
+        <tr>
+          <td style="text-align: left; font-size: 16px; padding: 5px 0 0 0; line-height: 1.5;">
+            <strong>{% translate "Costo de entrega" %}</strong></td>
+          <td style="text-align: right; font-size: 16px; padding: 5px 0 0 0; line-height: 1.5;">{{ delivery_cost }}</td>
+        </tr>
+      </table>
+    </div>
+  </div>
+  <div style="text-align: center; padding: 20px; background-color: #f0f0f0; font-size: 14px; color: #888;">
+    <p style="margin: 0;">Princess Castle &copy; {% now "Y" %}</p>
+  </div>
+</div>
+
+</body>
+</html>

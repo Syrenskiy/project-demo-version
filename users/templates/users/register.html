@@ -1,0 +1,87 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block custom_styles %}
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+{% endblock %}
+
+{% block content %}
+  <div class="container my-5">
+    <div class="row justify-content-center">
+      <div class="col-md-6 col-lg-5">
+        <div class="card shadow-sm">
+          <div class="card-body text-start">
+            <h2 class="card-title text-center mb-4">{{ title }}</h2>
+            <form method="POST" class="needs-validation" novalidate>
+              {% csrf_token %}
+              <input type="hidden" name="next" value="{{ next }}">
+
+              {% if form.non_field_errors %}
+                <div class="alert alert-danger">
+                  {{ form.non_field_errors }}
+                </div>
+              {% endif %}
+
+              {% for field in form %}
+                {% if field.name != 'cf_turnstile_response' %}
+                  {% if field.name not in "password1 password2" %}
+                    <div class="mb-3">
+                      <label for="id_{{ field.name }}" class="form-label">{{ field.label }}</label>
+                      {{ field.as_widget }}
+                      {% if field.errors %}
+                        <div class="invalid-feedback d-block">
+                          {{ field.errors|join:', ' }}
+                        </div>
+                      {% endif %}
+                    </div>
+                  {% else %}
+                    <div class="mb-3">
+                      <label for="id_{{ field.name }}" class="form-label">{{ field.label }}</label>
+                      <div class="position-relative">
+                        {{ field.as_widget }}
+                        <button type="button"
+                                class="btn btn-link position-absolute top-50 end-0 translate-middle-y"
+                                data-target="id_{{ field.name }}">
+                          <i class="fa-regular fa-eye"></i>
+                          <i class="fa-regular fa-eye-slash d-none"></i>
+                        </button>
+                      </div>
+                      {% if field.errors %}
+                        <div class="invalid-feedback d-block">
+                          {{ field.errors|join:', ' }}
+                        </div>
+                      {% endif %}
+                    </div>
+                  {% endif %}
+                {% endif %}
+              {% endfor %}
+
+              {{ form.cf_turnstile_response }}
+
+              <div class="mb-3 cf-turnstile"
+                   data-sitekey="{{ CLOUDFLARE_TURNSTILE_SITE_KEY }}"
+                   data-callback="onSubmitCallback"
+                   data-theme="light">
+              </div>
+              <div class="d-grid mb-1">
+                <button type="submit" class="btn btn-primary btn-lg">
+                  {{ title }}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+{% endblock %}
+
+{% block custom_js %}
+  <script src="{% static 'products/js/toggle_password.js' %}"></script>
+  <script src="https://challenges.cloudflare.com/turnstile/v0/api.js" async defer></script>
+  <script>
+    function onSubmitCallback(token) {
+      document.getElementById('id_cf_turnstile_response').value = token;
+    }
+  </script>
+{% endblock %}

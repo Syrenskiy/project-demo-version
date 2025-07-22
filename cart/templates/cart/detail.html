@@ -1,0 +1,119 @@
+{% extends "base.html" %}
+{% load i18n static custom_filters %}
+
+{% block content %}
+  <!-- Displaying messages -->
+  {% if messages %}
+    <div class="container my-4">
+      {% for message in messages %}
+        <div class="alert {{ message.tags }}" role="alert">
+          {{ message }}
+        </div>
+      {% endfor %}
+    </div>
+  {% endif %}
+
+  {% if cart_items %}
+    <div class="container">
+      <h2 class="my-4">{{ title }}</h2>
+      <div class="row">
+        <!-- List of products -->
+        <div class="col-lg-8">
+          {% for item in cart_items %}
+            {% with product=item.product %}
+              <div class="card mb-3 shadow-sm">
+                <div class="card-body text-start">
+                  <!-- Product image -->
+                  <a href="{{ product.get_absolute_url }}">
+                    <img src="{{ product.image_3x4_150x200.url }}"
+                         class="img-fluid rounded float-start me-3 d-inline-block" alt="Imagen">
+                  </a>
+                  <!-- Product information -->
+                  <h5 class="card-title">{{ product.name }}</h5>
+                  <p class="mb-1"><strong>${{ item.price|floatformat_custom }}</strong></p>
+                  <p class="mb-1">{% translate "Color" %}: {{ item.color }}</p>
+                  {% if item.size %}<p class="mb-1">{% translate "Talla" %}: {{ item.size }}</p>{% endif %}
+                  {% if item.quantity %}<p class="mb-1">{% translate "Piezas" %}: {{ item.quantity }}</p>{% endif %}
+                  <!-- Quantity Management -->
+                  <div class="d-flex align-items-center">
+                    <form method="post"
+                          action="{% url "cart:cart_subtract" product_id=product.id color_slug=item.color_slug %}"
+                          class="me-2 mt-2">
+                      {% csrf_token %}
+                      <input type="hidden" name="color" value="{{ item.color.id }}">
+                      <input type="hidden" name="price" value="{{ item.price|floatformat_custom }}">
+                      <input type="hidden" name="size" value="{{ item.size.id }}">
+                      <input type="hidden" name="quantity" value="{{ item.quantity.id }}">
+                      <input type="hidden" name="product_quantity" value="1">
+                      <button type="submit" class="btn btn-outline-secondary btn-sm">&lt;</button>
+                    </form>
+                    <span class="mx-1 mt-2">{{ item.product_quantity }}</span>
+                    <form method="post"
+                          action="{% url "cart:cart_add" product_id=product.id color_slug=item.color_slug %}"
+                          class="ms-2 mt-2">
+                      {% csrf_token %}
+                      <input type="hidden" name="color" value="{{ item.color.id }}">
+                      <input type="hidden" name="price" value="{{ item.price|floatformat_custom }}">
+                      <input type="hidden" name="size" value="{{ item.size.id }}">
+                      <input type="hidden" name="quantity" value="{{ item.quantity.id }}">
+                      <input type="hidden" name="product_quantity" value="1">
+                      <button type="submit" class="btn btn-outline-secondary btn-sm">&gt;</button>
+                    </form>
+                  </div>
+
+                  <p class="mt-3"><strong>{% translate "Total" %}:
+                    ${{ item.total_price|floatformat_custom }}</strong></p>
+                </div>
+
+              </div>
+            {% endwith %}
+          {% endfor %}
+        </div>
+
+        <!-- Basket totals -->
+        <div class="col-lg-4">
+          <div class="card shadow-sm">
+            <div class="card-body">
+              {% if cart.coupon %}
+                <p class="d-flex justify-content-between">
+                  <span>{% translate "SubTotal" %}:</span>
+                  <span>${{ cart.get_total_price|floatformat_custom }}</span>
+                </p>
+                <p class="d-flex justify-content-between">
+                  <span class="text-muted">{% translate "Cupón" %} "{{ cart.coupon.code }}" (-{{ cart.coupon.discount }}%):</span>
+                  <span class="text-danger">-${{ cart.get_discount|floatformat_custom }}</span>
+                </p>
+              {% endif %}
+              <p class="d-flex justify-content-between fw-bold fs-3">
+                <span>{% translate "Total" %}:</span>
+                <span>${{ cart.get_total_price_after_discount|floatformat_custom }}</span>
+              </p>
+              <a href="{% url "orders:order_create" %}" class="btn btn-soft-primary w-100 my-3">
+                {% translate "Comprar" %}
+              </a>
+              <form action="{% url "coupons:apply" %}" method="post" class="mb-4">
+                {% csrf_token %}
+                <div class="input-group">
+                  {{ coupon_apply_form.code }}
+                  <button type="submit" class="btn btn-soft-secondary">
+                    {% translate "Aplicar" %}
+                  </button>
+                </div>
+              </form>
+
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  {% else %}
+    <div class="container my-5 text-center">
+      <div class="py-5">
+        <h1 class="display-4 text-muted">{% translate "Su carrito está vacío" %}</h1>
+        <p
+          class="lead text-secondary mb-4">{% translate "Explore nuestros productos y agregue sus favoritos al carrito." %}</p>
+        <a href="{% url 'home' %}" class="btn btn-soft-primary btn-lg">{% translate "Ver productos" %}</a>
+      </div>
+    </div>
+  {% endif %}
+{% endblock %}

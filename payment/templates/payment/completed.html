@@ -1,0 +1,23 @@
+{% extends "base.html" %}
+{% load i18n %}
+
+{% block custom_styles %}
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons/font/bootstrap-icons.css" rel="stylesheet">
+{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+  <div class="text-center">
+    <!-- Иконка успешного платежа -->
+    <div class="mb-4">
+      <i class="bi bi-check-circle-fill text-success display-1"></i>
+    </div>
+    <!-- Заголовок -->
+    <h1 class="mb-3 text-success fw-bold">{% translate "Obtuvimos su comprobante" %}</h1>
+    <!-- Описание -->
+    <p class="mb-4 lead text-muted">{% translate "Una vez verificado, empecemos a preparar su pedido" %}</p>
+    <!-- Кнопка для возврата -->
+    <a href="{% url 'home' %}" class="btn btn-soft-primary btn-lg">{% translate "Regresar a la página principal" %}</a>
+  </div>
+</div>
+{% endblock %}

@@ -1,0 +1,70 @@
+{% extends "base.html" %}
+{% load i18n custom_filters %}
+
+{% block custom_styles %}
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons/font/bootstrap-icons.css" rel="stylesheet">
+  <style>
+      ul {
+          list-style: none;
+          padding-left: 0;
+      }
+  </style>
+{% endblock %}
+
+{% block content %}
+  <div class="container mt-4">
+    <div class="card shadow-sm">
+      <div class="card-header bg-soft-primary text-white text-center">
+        <h3>{{ title }}</h3>
+      </div>
+      <div class="card-body">
+        <p
+          class="text-center">{% translate "Para completar su pedido, siga las instrucciones de pago a continuación." %}
+        </p>
+        <div class="alert alert-info text-center">
+          <strong>{% translate "Número de pedido" %}:</strong> <span class="fw-bold">#{{ order.id }}</span><br>
+          <strong>{% translate "Total a pagar" %}:</strong>
+          {% if order.partial_payment %}
+            <span class="fw-bold">${{ order.get_total_cost_with_partial_payment|floatformat_custom }} MXN</span>
+            <p class="mb-0" style="color: #055160;">
+              <i class="bi bi-info-circle-fill me-2"></i>
+              {% translate "Usted eligió pago parcial, el resto se pagará en la entrega" %}.
+            </p>
+          {% else %}
+            <span class="fw-bold">${{ order.get_total_cost|floatformat_custom }} MXN</span>
+          {% endif %}
+        </div>
+        <h5 class="text-center mt-3">{% translate "Métodos de pago" %}</h5>
+        <div class="mb-3">
+          <ul>
+            <li>
+              <i class="bi bi-chevron-right text-soft-primary me-2"></i>
+              <strong>{% translate "Pago por transferencia bancaria" %}</strong>
+            </li>
+            <li>
+              <i class="bi bi-chevron-right text-soft-primary me-2"></i>
+              <strong>{% translate "Pago en efectivo" %}</strong>
+              <p>{% translate "Puede realizar un depósito en efectivo en OXXO o tiendas de conveniencia" %}.</p>
+            </li>
+          </ul>
+        </div>
+        <h5 class="text-center mb-2">{% translate "Detalles de pago" %}</h5>
+        <div class="p-3 bg-light border rounded">
+          <p class="mb-1"><strong>{% translate "Número de tarjeta" %}: </strong>{{ card }}</p>
+          <p class="mb-1"><strong>{% translate "Nombre del titular" %}: </strong>{{ name }}</p>
+          <p class="mb-0"><strong>{% translate "Banco" %}: </strong>{{ bank }}</p>
+        </div>
+        <div class="alert alert-warning">
+          {% translate "Su pedido comenzará a prepararse una vez que recibamos la confirmación del pago" %}.
+        </div>
+
+        <h5 class="text-center">{% translate "Confirmación de pago" %}</h5>
+        <p>{% translate "Después de realizar el pago, cargue una foto del comprobante o captura de pantalla de la transferencia" %}.</p>
+        <form action="{% url 'payment:payment_confirmation' %}" class="text-center">
+          <button type="submit"
+                  class="btn btn-soft-primary my-3">{% translate "Enviar comprobante" %}</button>
+        </form>
+      </div>
+    </div>
+  </div>
+{% endblock %}

@@ -1,8 +1,8 @@
-# Princess Castle (Online store of children's goods)
+# Princess Castle – Full-Stack E-Commerce Platform
 
 [![Live Demo](https://img.shields.io/badge/Live-Demo-brightgreen?style=for-the-badge&logo=world)](https://princess-castle.com)
 
-Princess Castle is a full-stack e-commerce platform that I developed for a small company to establish their online presence and begin selling products. This project served a dual purpose: delivering a real-world business solution while also acting as a comprehensive showcase of my web development skills. The entire deployment process is automated through a CI/CD pipeline using GitHub Actions. It provides a complete customer journey, from browsing a multilingual product catalog to a streamlined checkout process designed to handle manual payment confirmations, demonstrating a feature-rich application ready for a production environment.
+Princess Castle is a production-ready full-stack e-commerce platform built for a small business to launch its online sales. Developed end-to-end — from backend architecture to deployment — it delivers a complete customer journey with multilingual support, secure payments, and responsive design. The project is deployed on AWS via a fully automated CI/CD pipeline and is engineered with performance, and security.
 
 ## 📸 Demo
 
@@ -27,9 +27,10 @@ Princess Castle is a full-stack e-commerce platform that I developed for a small
 | Category | Technologies |
 | :--- | :--- |
 | **Backend** | `Python 3.12` `Django 5.0.7` `Django REST Framework` `Celery` `RabbitMQ` `Redis` `OAuth 2.0` |
-| **Frontend** | `Bootstrap 5` `Django Templates` `HTML5` `CSS3` `JavaScript` |
 | **Database** | `PostgreSQL` |
+| **Frontend** | `Bootstrap 5` `Django Templates` `HTML5` `CSS3` `JavaScript` |
 | **Deploy & Infrastructure** | `AWS (EC2, S3, RDS)` `Nginx` `uWSGI` `Docker` `Cloudflare` |
+| **Monitoring & Observability** | `CloudWatch` `Sentry` `Google Search Console` |
 | **CI/CD** | `GitHub Actions` `AWS SSM` |
 | **Testing** | `Unittest` |
 | **Asset Optimization** | `ImageKit` |
@@ -42,19 +43,17 @@ This section details some of the key technical decisions and implementations tha
 During development, I actively used the `django-debug-toolbar` to analyze and profile database performance. This allowed me to identify and resolve several N+1 query problems by refactoring Django ORM queries with `select_related` and `prefetch_related`, significantly improving page load times.
 
 ### 🛡️ Security & Infrastructure
-The project is managed through Cloudflare, where I have configured a multi-layered security approach:
-* **DNS & CDN:** Leveraged Cloudflare's global CDN for fast content delivery.
-* **WAF & Firewall Rules:** Implemented custom firewall rules to block threats.
-* **Bot Management:** Configured rules to manage bot traffic, allowing legitimate crawlers while blocking malicious ones.
-* **Spam Protection:** Integrated Cloudflare Turnstile as a user-friendly alternative to CAPTCHA.
+The project is supported by a multi-layered infrastructure and monitoring strategy to ensure performance, security, and reliability in production:
+* **Cloudflare (DNS, CDN & Security):** Leveraged `Cloudflare`'s global CDN for fast content delivery. Implemented WAF and custom firewall rules to block threats, configured bot management to allow legitimate crawlers while blocking malicious traffic, and integrated `Turnstile` as a user-friendly alternative to CAPTCHA.
+* **Monitoring & Error Tracking:** Integrated `Sentry` for real-time error tracking and `AWS CloudWatch` for infrastructure monitoring, ensuring quick detection and resolution of production issues.
 
 ### 📈 SEO Optimization
 To improve the site's visibility for search engines, several SEO best practices were implemented:
 * **Dynamic Sitemap:** A `sitemap.xml` is automatically generated via Django's sitemaps framework.
-* **Monitoring & Analytics:** The website is integrated with Google Search Console to monitor indexing status and track search performance.
+* **Search Performance Tracking:** The website is integrated with `Google Search Console` to monitor indexing status and track search performance.
 
 ### 💳 Payment System Evolution
-Initially, the project was developed with Stripe and Conekta API integrations. Due to the client's specific business and regulatory requirements, the system was ultimately adapted to a robust process that handles orders with manual payment confirmation. This demonstrates adaptability in delivering technical solutions based on real-world business constraints.
+Initially, the project was developed with `Stripe` and `Conekta` API integrations. Due to the client's specific business and regulatory requirements, the system was ultimately adapted to a robust process that handles orders with manual payment confirmation. This demonstrates adaptability in delivering technical solutions based on real-world business constraints.
 
 ## 📄 License
 

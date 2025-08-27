@@ -15,7 +15,7 @@ def clear_product_cache(sender, instance, **kwargs):
 
 
 @receiver(post_save, sender=ProductSuggestion)
-def send_notification(sender, instance, created, **kwargs):
+def send_notification(sender, instance, created: bool, **kwargs):
     """Triggers the email notification task when a ProductSuggestion is created."""
     if created:
         send_product_suggestion_notification.delay(instance.id)

@@ -15,21 +15,21 @@ class UserAdmin(UserAdmin):
     list_editable = ['is_active']
 
     @admin.display(description='Correo Electrónico')
-    def email_formatted(self, user: User):
+    def email_formatted(self, user: User) -> str:
         """Display user's email in the list view."""
         return user.email
 
     @admin.display(description='Fecha de creación')
-    def date_joined_formatted(self, user: User):
+    def date_joined_formatted(self, user: User) -> str:
         """Format and display the date the user joined."""
         return timezone.localtime(user.date_joined).strftime("%d.%m.%Y %H:%M")
 
     @admin.display(description='Último ingreso')
-    def last_login_formatted(self, user: User):
+    def last_login_formatted(self, user: User) -> str:
         """Format and display the user's last login date."""
         return timezone.localtime(user.last_login).strftime("%d.%m.%Y %H:%M") if user.last_login else '-'
 
     @admin.display(description='Pedidos')
-    def count_orders_paid(self, user: User):
+    def count_orders_paid(self, user: User) -> int:
         """Display total orders paid for the user."""
         return Order.objects.filter(user=user, paid_full=True).count()

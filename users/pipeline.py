@@ -1,8 +1,11 @@
-from django.contrib.auth.models import Group
+from django.contrib.auth.models import Group, AbstractBaseUser
 from users.tasks import send_registration_email
 
+from typing import Any
 
-def new_users_handler(backend, user, response, is_new, *args, **kwargs):
+
+def new_users_handler(backend, user: AbstractBaseUser, response, is_new: bool,
+                      *args: Any, **kwargs: Any) -> None:
     """
     Handler for new users authenticated via social login.
     Adds new social-authenticated users to the "social" group and sends a welcome email.

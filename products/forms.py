@@ -5,6 +5,8 @@ from django import forms
 from django.core.exceptions import ValidationError
 from turnstile.fields import TurnstileField
 
+from django.core.files.uploadedfile import UploadedFile
+
 from products.models import Product, Quantity, Size, Comment, ProductSuggestion, ProductSuggestionImage
 
 from django.utils.translation import gettext_lazy as _
@@ -117,7 +119,7 @@ class ProductSuggestionForm(forms.ModelForm):
         if user:
             self.fields['phone'].initial = user.phone
 
-    def clean_single_image(self, image):
+    def clean_single_image(self, image: UploadedFile | None) -> UploadedFile | None:
         """Validate that the image is of an allowed type and has a valid size."""
         if image:
             allowed_formats = ['jpeg', 'png', 'gif', 'webp', 'bmp', 'tiff']
@@ -147,22 +149,22 @@ class ProductSuggestionForm(forms.ModelForm):
 
         return image
 
-    def clean_image_1(self):
+    def clean_image_1(self) -> UploadedFile | None:
         """Validate that only valid images are uploaded for image_1."""
         return self.clean_single_image(self.cleaned_data.get('image_1'))
 
-    def clean_image_2(self):
+    def clean_image_2(self) -> UploadedFile | None:
         """Validate that only valid images are uploaded for image_2."""
         return self.clean_single_image(self.cleaned_data.get('image_2'))
 
-    def clean_image_3(self):
+    def clean_image_3(self) -> UploadedFile | None:
         """Validate that only valid images are uploaded for image_3."""
         return self.clean_single_image(self.cleaned_data.get('image_3'))
 
-    def save(self, commit=True):
+    def save(self, commit: bool = True) -> ProductSuggestion:
         """Save the suggestion and associated images."""
         suggestion = super().save(commit=commit)
-        if commit:  # Сохраняем изображения только если suggestion уже сохранен
+        if commit:  # Save images only if suggestion is already saved
             for image_field in ['image_1', 'image_2', 'image_3']:
                 image = self.cleaned_data.get(image_field)
                 if image:

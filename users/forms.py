@@ -10,6 +10,7 @@ from django.forms import ClearableFileInput
 
 from django.utils.translation import gettext_lazy as _
 
+from django.core.files.uploadedfile import UploadedFile
 
 logger = logging.getLogger('django')
 
@@ -61,7 +62,7 @@ class RegisterUserForm(UserCreationForm):
             'username': forms.TextInput(attrs={'class': 'form-control bg-light-gray'}),
         }
 
-    def clean_email(self):
+    def clean_email(self) -> str:
         """Validate that the provided email is unique."""
         email = self.cleaned_data['email']
         if get_user_model().objects.filter(email=email).exists():
@@ -149,16 +150,16 @@ class ProfileUserForm(forms.ModelForm):
             'address': forms.TextInput(attrs={'class': 'form-control bg-light-gray'}),
         }
 
-    def clean_photo(self):
-        """Validar que la foto subida sea válida."""
+    def clean_photo(self) -> UploadedFile | None:
+        """Validate that the uploaded photo is valid."""
         image = self.cleaned_data.get('photo')
         if image:
             allowed_formats = ['jpeg', 'png', 'gif', 'webp', 'bmp', 'tiff']
-            max_size_mb = 5  # Максимальный размер для аватара
+            max_size_mb = 5
 
             logger.info(f"Inicio de validación de la foto del perfil: {image.name}")
 
-            # Validar contenido de la imagen usando Pillow
+            # Validate image content using Pillow
             try:
                 img = Image.open(image)
                 logger.info(f"Formato detectado de la foto: {img.format.lower()}")
@@ -169,7 +170,7 @@ class ProfileUserForm(forms.ModelForm):
                 logger.error(f"Error al validar la foto {image.name}: {str(e)}")
                 raise forms.ValidationError(_("El archivo seleccionado no es una imagen válida."))
 
-            # Validar tamaño del archivo
+            # Validate file size
             if image.size > max_size_mb * 1024 * 1024:
                 logger.warning(f"El tamaño de la foto excede el límite permitido: {image.size / (1024 * 1024):.2f} MB")
                 raise forms.ValidationError(

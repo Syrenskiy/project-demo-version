@@ -5,8 +5,10 @@ from django.conf import settings
 
 from django.utils.translation import gettext_lazy as _
 
+from typing import Any
 
-def get_context_menu(request):
+
+def get_context_menu(request) -> dict[str, Any]:
     """
     Constructs a context menu for site navigation based on user authentication status.
     Adds options for cart, likes, search, login/profile, and language selection.

@@ -3,10 +3,10 @@ from django.utils.translation import get_language
 
 class DataMixin:
     """Mixin to add pagination and customizable context data to views."""
-    paginate_by = 12
-    title_page = None
-    cat_selected = None
-    extra_context = {}
+    paginate_by: int = 12
+    title_page: str | None = None
+    cat_selected: int | None = None
+    extra_context: dict[str, Any] = {}
 
     def __init__(self):
         """Initialize extra context data with title and selected category if provided."""
@@ -17,19 +17,19 @@ class DataMixin:
             self.extra_context['cat_selected'] = self.cat_selected
 
     @staticmethod
-    def get_mixin_context(context, **kwargs):
+    def get_mixin_context(context: dict[str, Any], **kwargs: Any) -> dict[str, Any]:
         """Update the context with additional data, defaulting cat_selected to None."""
         context['cat_selected'] = None
         context.update(kwargs)
         return context
 
 
-def generate_cache_key(obj, data):
+def generate_cache_key(obj: str, data: int | str) -> str:
     """Generate a cache key based on the object type and language."""
     return f'{obj}: {data}_{get_language()}'
 
 
-def get_ru_suffix(obj, data):
+def get_ru_suffix(obj: str, data: int) -> str:
     """Return the correct Russian suffix for words based on quantity."""
     if get_language() == 'ru':
         if data % 10 == 1 and data % 100 != 11:
@@ -47,3 +47,4 @@ def get_ru_suffix(obj, data):
                 return 'ев'
             elif obj == 'search':
                 return 'ов'
+    return ''

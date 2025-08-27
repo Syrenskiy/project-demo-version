@@ -2,6 +2,9 @@ from rest_framework import serializers
 
 from products.models import Product, Category, Tag, Size, Quantity, Comment, Color, ProductColor
 
+from decimal import Decimal
+from typing import Any
+
 
 class CategorySerializer(serializers.ModelSerializer):
     class Meta:
@@ -39,12 +42,12 @@ class ProductSerializer(serializers.ModelSerializer):
                   'colors_images', 'category', 'description',
                   'image', 'tags', 'comments']
 
-    def get_comments(self, obj: Product):
+    def get_comments(self, obj: Product) -> list[dict[str, Any]]:
         """Return only active comments for the product."""
         active_comments = obj.comments.filter(active=True)
         return CommentSerializer(active_comments, many=True).data
 
-    def get_size_prices(self, obj: Product):
+    def get_size_prices(self, obj: Product) -> list[dict[str, Any]]:
         """Return sizes and their prices for the product."""
         size_prices = obj.productsize_set.all()
         return [
@@ -52,7 +55,7 @@ class ProductSerializer(serializers.ModelSerializer):
             for size in size_prices
         ]
 
-    def get_quantity_prices(self, obj: Product):
+    def get_quantity_prices(self, obj: Product) -> list[dict[str, Any]]:
         """Return quantities and their prices for the product."""
         quantity_prices = obj.productquantity_set.all()
         return [
@@ -60,10 +63,10 @@ class ProductSerializer(serializers.ModelSerializer):
              'price': quantity.price} for quantity in quantity_prices
         ]
 
-    def get_min_price(self, obj):
+    def get_min_price(self, obj) -> Decimal | None:
         return getattr(obj, 'min_price', None)
 
-    def get_colors_images(self, obj: ProductColor):
+    def get_colors_images(self, obj: Product) -> list[dict[str, Any]]:
         """Return colors, their slugs, icons, and associated images with absolute URLs for the product."""
         request = self.context.get('request')
         colors = obj.colors.all()

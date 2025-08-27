@@ -5,7 +5,7 @@ from django.conf import settings
 from django.core.exceptions import ValidationError
 from django.core.validators import MinLengthValidator, MaxLengthValidator, MaxValueValidator, MinValueValidator
 from django.db import models
-from django.db.models import ManyToManyField, Min, F, Case, When
+from django.db.models import ManyToManyField, Min, F, Case, When, QuerySet
 from django.urls import reverse
 from django.utils import timezone
 from imagekit.models import ImageSpecField
@@ -13,12 +13,14 @@ from imagekit.processors import ResizeToFill, Transpose
 from parler.managers import TranslatableManager
 from parler.models import TranslatableModel, TranslatedFields, TranslationDoesNotExist
 
+from django.core.files.uploadedfile import UploadedFile
+
 from princesscastle.settings.storages import MediaStorage
 
 from django.utils.translation import gettext_lazy as _
 
 
-def validate_svg(value):
+def validate_svg(value: UploadedFile) -> None:
     """
     Validates that the uploaded file is an SVG:
     - Checks the file extension is '.svg'.
@@ -34,7 +36,7 @@ def validate_svg(value):
         raise ValidationError(_("El archivo SVG no es válido."))
 
 
-def validate_image_size(image):
+def validate_image_size(image: UploadedFile) -> None:
     """Image size validation"""
     max_size = 1 * 1024 * 1024
     if image.size > max_size:
@@ -44,10 +46,10 @@ def validate_image_size(image):
 class PublishedManager(TranslatableManager):
     """Manager for retrieving only published products."""
 
-    def get_queryset(self):
+    def get_queryset(self) -> QuerySet['Product']:
         return super().get_queryset().filter(is_published=Product.Status.PUBLISHED)
 
-    def with_min_price(self):
+    def with_min_price(self) -> QuerySet['Product']:
         """
         Annotates the queryset with the minimum price.
 
@@ -98,9 +100,6 @@ class Product(TranslatableModel):
                                        format='JPEG', options={'quality': 80})
     category = models.ForeignKey('Category', on_delete=models.PROTECT,
                                  related_name='products', verbose_name=_('Categoría'))
-    # thematic_category = models.ManyToManyField('ThematicCategory',
-    #                                            related_name='products', blank=True,
-    #                                            verbose_name=_('Thematic Category'))
     tags = models.ManyToManyField('Tag', related_name='products', blank=True, verbose_name=_('Tags'))
     size = models.ManyToManyField('Size', related_name='products', blank=True,
                                   through='ProductSize', verbose_name=_('Talla'))
@@ -222,7 +221,7 @@ class ThematicCategory(TranslatableModel):
         except TranslationDoesNotExist:
             return ''
 
-    def is_active(self):
+    def is_active(self) -> bool:
         """Checks if the thematic category is currently active based on date range and products."""
         now = timezone.now()
         published_products_exists = self.products.filter(is_published=Product.Status.PUBLISHED).exists()

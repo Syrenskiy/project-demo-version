@@ -9,7 +9,7 @@ from django.utils.translation import gettext_lazy as _
 
 
 @shared_task
-def send_registration_email(user_email):
+def send_registration_email(user_email: str) -> int:
     """Celery task to send a welcome email to a newly registered user."""
     subject = 'Princess Castle'
     message = _('Registro exitoso.\n\nBienvenido(a) a la familia Princess Castle!')

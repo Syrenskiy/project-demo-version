@@ -1,8 +1,10 @@
 from django.contrib import admin
-from django.db.models import Count
+from django.db.models import Count, QuerySet
 from django.utils.html import format_html
-from django.utils.safestring import mark_safe
+from django.utils.safestring import mark_safe, SafeString
 from parler.admin import TranslatableAdmin
+
+from typing import Any
 
 from products.models import Product, Image, Tag, Color, Category, Quantity, Size, ProductColor, Comment, \
     ThematicCategory, ProductSuggestion, ProductSuggestionImage, ProductQuantity, ProductSize
@@ -51,31 +53,33 @@ class ProductAdmin(TranslatableAdmin):
     filter_horizontal = ['tags']
     save_on_top = True
 
-    def get_prepopulated_fields(self, request, obj=None):
+    def get_prepopulated_fields(self, request, obj: Any | None = None) -> dict[str, tuple[str, ...]]:
         """Auto-populates the slug field based on the name field."""
         return {'slug': ('name',)}
 
     @admin.display(description='Imágen')
-    def display_image(self, product: Product):
+    def display_image(self, product: Product) -> SafeString | None:
+
         """Displays a thumbnail image in the admin interface."""
         if product.image:
             return mark_safe(
                 f"<a href='{product.image.url}'><img src='{product.image.url}' alt='{product.name}' width='50'></a>")
+        return None
 
     @admin.display(description='Likes')
-    def display_likes(self, product: Product):
+    def display_likes(self, product: Product) -> int | None:
         """Displays the count of likes for the product."""
         likes_count = product.likes.count()
         return likes_count if likes_count else None
 
     @admin.action(description='Publicar artículos seleccionados')
-    def set_published(self, request, queryset):
+    def set_published(self, request, queryset: QuerySet[Product]) -> None:
         """Bulk action to mark products as published."""
         count = queryset.update(is_published=Product.Status.PUBLISHED)
         self.message_user(request, f'{count} artículos fueron publicados.')
 
     @admin.action(description='Quitar de publicados artículos seleccionados')
-    def set_draft(self, request, queryset):
+    def set_draft(self, request, queryset: QuerySet[Product]) -> None:
         """Bulk action to mark products as draft."""
         count = queryset.update(is_published=Product.Status.DRAFT)
         self.message_user(request, f'{count} artículos fueron pausados.')
@@ -88,11 +92,11 @@ class MixinAdmin(TranslatableAdmin):
     list_per_page = 10
     search_fields = ['name']
 
-    def get_prepopulated_fields(self, request, obj=None):
+    def get_prepopulated_fields(self, request, obj: Any | None = None) -> dict[str, tuple[str, ...]]:
         """Auto-populates the slug field based on the name field."""
         return {'slug': ('name',)}
 
-    def get_queryset(self, request):
+    def get_queryset(self, request) -> QuerySet:
         """Annotates queryset with the count of associated products or colors."""
         queryset = super().get_queryset(request)
         if self.model == Color:
@@ -103,7 +107,7 @@ class MixinAdmin(TranslatableAdmin):
         return queryset
 
     @admin.display(description='Vinculados', ordering='product_count')
-    def currently_in_use(self, obj):
+    def currently_in_use(self, obj: Any) -> int:
         """Displays the count of associated products or colors."""
         return obj.product_count
 
@@ -129,7 +133,7 @@ class ThematicCategoryAdmin(MixinAdmin):
     save_on_top = True
 
     @admin.display(description='Imágen')
-    def display_image(self, thematic_category: ThematicCategory):
+    def display_image(self, thematic_category: ThematicCategory) -> SafeString | None:
         """Displays a thumbnail image in the admin interface."""
         if thematic_category.image:
             return mark_safe(
@@ -137,8 +141,10 @@ class ThematicCategoryAdmin(MixinAdmin):
                 f"<img src='{thematic_category.image.url}' alt='{thematic_category.name}' width='70'></a>"
             )
 
+        return None
+
     @admin.display(description='Activa', boolean=True)
-    def display_is_active(self, obj):
+    def display_is_active(self, obj: ThematicCategory) -> bool:
         """Displays if the thematic category is active."""
         return obj.is_active()
 
@@ -151,7 +157,7 @@ class ProductColorAdmin(admin.ModelAdmin):
     list_filter = ['product', 'color']
     list_per_page = 10
 
-    def get_queryset(self, request):
+    def get_queryset(self, request) -> QuerySet[ProductColor]:
         """Annotates queryset with the count of associated photos."""
         queryset = super().get_queryset(request).select_related('product', 'color').prefetch_related('images')
 
@@ -160,7 +166,7 @@ class ProductColorAdmin(admin.ModelAdmin):
         return queryset
 
     @admin.display(description='Cantidad de Fotos', ordering='photos_count')
-    def total_images(self, obj):
+    def total_images(self, obj: ProductColor) -> int:
         """Displays the count of associated photos."""
         return obj.photos_count
 
@@ -205,7 +211,7 @@ class SizeAdmin(TranslatableAdmin):
     list_per_page = 10
     search_fields = ['size']
 
-    def get_prepopulated_fields(self, request, obj=None):
+    def get_prepopulated_fields(self, request, obj: Any = None) -> dict[str, tuple[str, ...]]:
         """Auto-populates the slug field based on the size field."""
         return {'slug': ('size',)}
 
@@ -229,7 +235,7 @@ class ProductSuggestionImageInline(admin.TabularInline):
     readonly_fields = ('image_preview',)
 
     @admin.display(description='Imagen')
-    def image_preview(self, obj):
+    def image_preview(self, obj: ProductSuggestionImage) -> SafeString | str:
         """Display a thumbnail of the image."""
         if obj.image:
             return format_html(f'<img src="{obj.image.url}" style="width: 75px; height: auto;" />')
@@ -248,18 +254,18 @@ class ProductSuggestionAdmin(admin.ModelAdmin):
     save_on_top = True
 
     @admin.display(description='Nombre')
-    def display_name(self, obj):
+    def display_name(self, obj: ProductSuggestion) -> str:
         """Display user's name, if exists."""
         first_name = obj.user.first_name if obj.user.first_name else ''
         last_name = obj.user.last_name if obj.user.last_name else ''
         return first_name + ' ' + last_name
 
     @admin.display(description='Creación')
-    def created_formatted(self, obj):
+    def created_formatted(self, obj: ProductSuggestion) -> str:
         return obj.created.strftime("%d.%m.%Y %H:%M")
 
     @admin.display(description='Imágenes')
-    def display_images(self, obj):
+    def display_images(self, obj: ProductSuggestion) -> SafeString | str:
         """Display all related images in a list."""
         images = obj.images.all()
         if images.exists():

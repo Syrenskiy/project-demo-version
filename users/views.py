@@ -1,4 +1,8 @@
 import logging
+from typing import Any
+from django.db.models import QuerySet
+from django.contrib.auth.models import AbstractUser
+from django.http import HttpResponse
 
 from django.conf import settings
 from django.contrib import messages
@@ -28,7 +32,7 @@ class LoginUserView(LoginView):
     template_name = 'users/login.html'
     extra_context = {'title': _('Iniciar sesión')}
 
-    def form_valid(self, form):
+    def form_valid(self, form: LoginUserForm) -> HttpResponse:
         """Checking Turnstile and log successful login attempt."""
         token = form.cleaned_data.get('cf_turnstile_response')
         if not verify_turnstile(token, self.request.META.get('REMOTE_ADDR')):
@@ -38,7 +42,7 @@ class LoginUserView(LoginView):
         logger.info(f"Usuario {form.cleaned_data['username']} ha iniciado sesión correctamente.")
         return super().form_valid(form)
 
-    def form_invalid(self, form):
+    def form_invalid(self, form: LoginUserForm) -> HttpResponse:
         """Log failed login attempt."""
         try:
             username = form.cleaned_data['username']
@@ -47,7 +51,7 @@ class LoginUserView(LoginView):
             logger.warning(f"Intento de inicio de sesión fallido, usuario incorrecto: {e}")
         return super().form_invalid(form)
 
-    def get_context_data(self, **kwargs):
+    def get_context_data(self, **kwargs: Any) -> dict[str, Any]:
         """Add extra context Turnstile."""
         context = super().get_context_data(**kwargs)
         context['CLOUDFLARE_TURNSTILE_SITE_KEY'] = settings.CLOUDFLARE_TURNSTILE_SITE_KEY
@@ -61,7 +65,7 @@ class RegisterUserView(CreateView):
     extra_context = {'title': _('Registrarse')}
     success_url = reverse_lazy('users:register_done')
 
-    def form_valid(self, form):
+    def form_valid(self, form: RegisterUserForm) -> HttpResponse:
         """Checking Turnstile, log the new user registration and send a welcome email asynchronously."""
         token = form.cleaned_data.get('cf_turnstile_response')
         if not verify_turnstile(token, self.request.META.get('REMOTE_ADDR')):
@@ -76,7 +80,7 @@ class RegisterUserView(CreateView):
             logger.error(f"Error al enviar correo de registro para {user_email}: {e}")
         return super().form_valid(form)
 
-    def get_context_data(self, **kwargs):
+    def get_context_data(self, **kwargs: Any) -> dict[str, Any]:
         """Add extra context Turnstile."""
         context = super().get_context_data(**kwargs)
         context['CLOUDFLARE_TURNSTILE_SITE_KEY'] = settings.CLOUDFLARE_TURNSTILE_SITE_KEY
@@ -97,13 +101,13 @@ class PasswordResetUserView(PasswordResetView):
     success_url = reverse_lazy('users:password_reset_done')
     extra_context = {'title': _('Recuperación de contraseña')}
 
-    def form_valid(self, form):
+    def form_valid(self, form: PasswordResetUserForm) -> HttpResponse:
         """Log successful password reset attempt."""
         logger.info(
             f"Solicitud de restablecimiento de contraseña enviada correctamente para el correo {form.cleaned_data['email']}.")
         return super().form_valid(form)
 
-    def form_invalid(self, form):
+    def form_invalid(self, form: PasswordResetUserForm) -> HttpResponse:
         """Log failed password reset attempt."""
         logger.warning(
             f"Fallo en la solicitud de restablecimiento de contraseña para el correo {form.cleaned_data['email']}.")
@@ -116,12 +120,12 @@ class PasswordResetConfirmUserView(PasswordResetConfirmView):
     template_name = 'users/password_reset_confirm.html'
     success_url = reverse_lazy('users:password_reset_complete')
 
-    def form_valid(self, form):
+    def form_valid(self, form: SetPasswordUserForm) -> HttpResponse:
         """Log successful password reset."""
         logger.info(f"El usuario ha cambiado su contraseña correctamente.")
         return super().form_valid(form)
 
-    def form_invalid(self, form):
+    def form_invalid(self, form: SetPasswordUserForm) -> HttpResponse:
         """Log failed password reset."""
         logger.warning(f"Error en el cambio de contraseña para el usuario.")
         return super().form_invalid(form)
@@ -150,15 +154,15 @@ class ProfileUserView(LoginRequiredMixin, SuccessMessageMixin, UpdateView):
         'title': _('Perfil'),
     }
 
-    def get_success_url(self):
+    def get_success_url(self) -> str:
         """Redirect to profile page upon successful update."""
         return reverse_lazy('users:profile')
 
-    def get_object(self, queryset=None):
+    def get_object(self, queryset: QuerySet | None = None) -> AbstractUser:
         """Return the logged-in user as the object for the view."""
         return self.request.user
 
-    def form_invalid(self, form):
+    def form_invalid(self, form: ProfileUserForm) -> HttpResponse:
         """Display an error message if the form submission fails."""
         messages.error(self.request, _('Se produjo un error al actualizar el perfil.'))
         return super().form_invalid(form)
@@ -172,7 +176,7 @@ class PurchaseHistoryView(LoginRequiredMixin, DataMixin, ListView):
     extra_context = {'delivery': _('A Domicilio')}
     paginate_by = 5
 
-    def get_queryset(self):
+    def get_queryset(self) -> QuerySet[Order]:
         """Retrieve the logged-in user's paid orders along with related data."""
         user = self.request.user
         logger.info(f"El usuario {user.username} accedió a su historial de compras.")
@@ -189,7 +193,7 @@ class PurchaseHistoryView(LoginRequiredMixin, DataMixin, ListView):
             )
         except Exception as e:
             logger.error(f"Error al obtener historial de compras para {user.username}: {e}")
-            return []
+            return Order.objects.none()
 
 
 class UsersLikesView(LoginRequiredMixin, ListView):
@@ -198,7 +202,7 @@ class UsersLikesView(LoginRequiredMixin, ListView):
     context_object_name = 'products'
     extra_context = {'title': _('Mis Favoritos')}
 
-    def get_queryset(self):
+    def get_queryset(self) -> QuerySet[Product]:
         """Retrieve the user's favorite products with related data."""
         user = self.request.user
         try:
@@ -225,7 +229,7 @@ class UsersCommentsView(LoginRequiredMixin, DataMixin, ListView):
     context_object_name = 'products'
     title_page = _('Dejar Comentarios')
 
-    def get_queryset(self):
+    def get_queryset(self) -> QuerySet[Product]:
         """Retrieve products the user has purchased but has not yet commented on."""
         user = self.request.user
         try:

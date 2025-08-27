@@ -7,7 +7,7 @@ from products.models import ProductSuggestion
 
 
 @shared_task
-def send_product_suggestion_notification(suggestion_id):
+def send_product_suggestion_notification(suggestion_id: int) -> int:
     """Task to send an email notification for a product suggestion"""
     suggestion = ProductSuggestion.objects.get(id=suggestion_id)
     subject = 'Nueva Propuesta de Princess Castle'

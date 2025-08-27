@@ -4,11 +4,13 @@ from django.db.models import Count
 
 from products.models import Category, Tag, Product
 
+from typing import Any
+
 register = template.Library()
 
 
 @register.inclusion_tag('products/includes/list_categories.html')
-def show_categories(cat_selected=0):
+def show_categories(cat_selected: int = 0) -> dict[str, Any]:
     """
     Retrieves all categories with the number of published products.
     Caches the result to improve performance.
@@ -22,7 +24,7 @@ def show_categories(cat_selected=0):
 
 
 @register.inclusion_tag('products/includes/list_tags.html')
-def show_tags():
+def show_tags() -> dict[str, Any]:
     """
     Retrieves all tags with the count of associated published products.
     Caches the result for better performance.

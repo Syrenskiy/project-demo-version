@@ -10,13 +10,14 @@ from django.contrib.postgres.aggregates import StringAgg
 from django.contrib.postgres.search import SearchVector
 from django.core.cache import cache
 from django.db.models.functions import Coalesce
-from django.http import JsonResponse, Http404
+from django.http import JsonResponse, Http404, HttpResponse, HttpResponseRedirect
 from django.shortcuts import render, get_object_or_404, redirect
 from django.urls import reverse, reverse_lazy
 from django.utils.timezone import now
 from django.views import View
 from django.views.generic import ListView, DetailView, TemplateView, CreateView
-from django.db.models import Count, Avg, Prefetch, Subquery, Value, TextField
+from django.db.models import Count, Avg, Prefetch, Subquery, Value, TextField, QuerySet
+from typing import Any
 
 from orders.models import OrderItem
 from .forms import CommentForm, SearchForm, CartAddProductForm, ProductSuggestionForm
@@ -37,7 +38,7 @@ class HomeView(DataMixin, ListView):
     title_page = _('Página principal')
     cat_selected = 0
 
-    def get_queryset(self):
+    def get_queryset(self) -> QuerySet[Product]:
         """Fetch published products with related categories and translations, and calculate min price."""
         try:
             return (Product.published
@@ -55,7 +56,7 @@ class HomeView(DataMixin, ListView):
             logger.error(f"Error al obtener la lista de productos: {e}")
             return Product.objects.none()
 
-    def get_context_data(self, **kwargs):
+    def get_context_data(self, **kwargs: Any) -> dict[str, Any]:
         """Add extra context including thematic categories."""
         context = super().get_context_data(**kwargs)
         active_thematic_categories = (
@@ -86,7 +87,7 @@ class CategoryView(DataMixin, ListView):
     context_object_name = 'products'
     allow_empty = False
 
-    def get_queryset(self):
+    def get_queryset(self) -> QuerySet[Product]:
         """Fetch products by the category slug with related data."""
         try:
             return (Product.published
@@ -106,7 +107,7 @@ class CategoryView(DataMixin, ListView):
             logger.error(f"Error al filtrar productos por categoría: {e}")
             return Product.objects.none()
 
-    def get_context_data(self, **kwargs):
+    def get_context_data(self, **kwargs: Any) -> dict[str, Any]:
         """Add extra context including selected category details."""
         context = super().get_context_data(**kwargs)
         cat = context['products'][0].category
@@ -119,7 +120,7 @@ class ThematicCategoryView(DataMixin, ListView):
     context_object_name = 'products'
     allow_empty = False
 
-    def get_queryset(self):
+    def get_queryset(self) -> QuerySet[Product]:
         """Fetch products associated with a specific thematic category slug."""
         try:
             return (Product.published.with_min_price()
@@ -134,7 +135,7 @@ class ThematicCategoryView(DataMixin, ListView):
             logger.error(f"Error al obtener la lista de categorías temáticas: {e}")
             return Product.objects.none()
 
-    def get_context_data(self, **kwargs):
+    def get_context_data(self, **kwargs: Any) -> dict[str, Any]:
         """Add extra context including thematic category details."""
         context = super().get_context_data(**kwargs)
         thematic_category = ThematicCategory.objects.get(translations__slug=self.kwargs['thematic_category_slug'])
@@ -147,7 +148,7 @@ class ProductDetailView(DataMixin, DetailView):
     slug_url_kwarg = 'product_slug'
     context_object_name = 'product'
 
-    def get_context_data(self, **kwargs):
+    def get_context_data(self, **kwargs: Any) -> dict[str, Any]:
         """Generate product detail page context, including related items and comments."""
         try:
             context = super().get_context_data(**kwargs)
@@ -183,7 +184,7 @@ class ProductDetailView(DataMixin, DetailView):
             logger.error(f"Error de visualización del producto: {e}")
             return {}
 
-    def get_object(self, queryset=None):
+    def get_object(self, queryset: Any | None = None) -> Product:
         """Retrieve product instance and cache it to prevent redundant queries."""
         if not hasattr(self, '_product'):
             self._product = get_object_or_404(
@@ -195,17 +196,17 @@ class ProductDetailView(DataMixin, DetailView):
         return self._product
 
     @staticmethod
-    def get_color(color_slug):
+    def get_color(color_slug: str) -> Color:
         """Fetch color by slug."""
         return get_object_or_404(Color, translations__slug=color_slug)
 
     @staticmethod
-    def get_images(product, color):
+    def get_images(product: Product, color: Color) -> QuerySet[Image]:
         """Retrieve product images for the specified color."""
         return Image.objects.filter(product_color__product=product, product_color__color=color)
 
     @staticmethod
-    def get_similar_products_urls(product):
+    def get_similar_products_urls(product: Product) -> list:
         """Fetch URLs for similar products by shared tags."""
         product_tags_ids = product.tags.values_list('id', flat=True)
         similar_products = (
@@ -237,22 +238,22 @@ class ProductDetailView(DataMixin, DetailView):
         return similar_products_urls
 
     @staticmethod
-    def get_average_rating(product):
+    def get_average_rating(product: Product) -> float | int:
         """Calculate average rating of the product."""
         return product.comments.filter(active=True).aggregate(Avg('rating'))['rating__avg'] or 0
 
     @staticmethod
-    def get_comments(product):
+    def get_comments(product: Product) -> QuerySet[Comment]:
         """Retrieve active comments associated with the product."""
         return product.comments.filter(active=True).select_related('user')
 
     @staticmethod
-    def show_product_quantity(product):
+    def show_product_quantity(product: Product) -> bool:
         """Determine whether to display product_quantity selection."""
         category = _("Recuerdos para Baby Shower")
         return not (product.category.name == category)
 
-    def build_absolute_url(self, product):
+    def build_absolute_url(self, product: Product) -> str:
         return self.request.build_absolute_uri(product.get_absolute_url())
 
 
@@ -262,7 +263,7 @@ class TagView(DataMixin, ListView):
     context_object_name = 'products'
     allow_empty = False
 
-    def get_queryset(self):
+    def get_queryset(self) -> QuerySet[Product]:
         """Fetch products associated with a specific tag slug."""
         try:
             return (Product.published.with_min_price()
@@ -278,7 +279,7 @@ class TagView(DataMixin, ListView):
             logger.error(f"Error al obtener la lista de etiquetas: {e}")
             return Product.objects.none()
 
-    def get_context_data(self, **kwargs):
+    def get_context_data(self, **kwargs: Any) -> dict[str, Any]:
         """Add extra context including tag details."""
         context = super().get_context_data(**kwargs)
         tag = Tag.objects.get(translations__slug=self.kwargs['tag_slug'])
@@ -291,7 +292,7 @@ class CommentView(DataMixin, DetailView):
     template_name = 'products/comment.html'
     slug_url_kwarg = 'product_slug'
 
-    def get_object(self, queryset=None):
+    def get_object(self, queryset: Any | None = None) -> Product | QuerySet:
         """Retrieve and cache the product object."""
         if not hasattr(self, '_product'):
             try:
@@ -304,7 +305,7 @@ class CommentView(DataMixin, DetailView):
                 return Product.objects.none()
         return self._product
 
-    def get_context_data(self, **kwargs):
+    def get_context_data(self, **kwargs: Any) -> dict[str, Any]:
         """Add context data for the comment form."""
         context = super().get_context_data(**kwargs)
         product = self.get_object()
@@ -318,7 +319,7 @@ class CommentView(DataMixin, DetailView):
         })
         return context
 
-    def post(self, request, *args, **kwargs):
+    def post(self, request, *args: Any, **kwargs: Any) -> HttpResponseRedirect | HttpResponse:
         """Handle comment form submission."""
         product = self.get_object()
         form = CommentForm(request.POST)
@@ -348,7 +349,7 @@ class CommentView(DataMixin, DetailView):
             return self.render_to_response(context)
 
 
-def product_search(request):
+def product_search(request) -> HttpResponse:
     """Handle product search functionality."""
     form = SearchForm()
     query = None
@@ -416,7 +417,7 @@ def product_search(request):
 class LikeView(LoginRequiredMixin, View):
     """View to handle liking or unliking a product by a logged-in user."""
 
-    def post(self, request, *args, **kwargs):
+    def post(self, request, *args: Any, **kwargs: Any) -> JsonResponse:
         """Toggle like status for a product based on user action."""
         product_id = request.POST.get('id')
         action = request.POST.get('action')
@@ -437,7 +438,7 @@ class LikeView(LoginRequiredMixin, View):
 class UpdatePriceView(View):
     """View to handle price updates based on selected size or quantity."""
 
-    def post(self, request, *args, **kwargs):
+    def post(self, request, *args: Any, **kwargs: Any) -> JsonResponse:
         try:
             data = json.loads(request.body)
             product_id = data.get('product_id')
@@ -469,7 +470,7 @@ class ProductSuggestionCreateView(LoginRequiredMixin, CreateView):
     template_name = 'products/product_suggestion_create.html'
     success_url = reverse_lazy('home')
 
-    def form_valid(self, form):
+    def form_valid(self, form: ProductSuggestionForm) -> HttpResponse:
         """Checking Turnstile and assign the logged-in user to the suggestion before saving."""
         token = form.cleaned_data.get('cf_turnstile_response')
         if not verify_turnstile(token, self.request.META.get('REMOTE_ADDR')):
@@ -480,13 +481,13 @@ class ProductSuggestionCreateView(LoginRequiredMixin, CreateView):
         messages.success(self.request, _('Su propuesta ha sido enviada con éxito!'))
         return super().form_valid(form)
 
-    def get_form_kwargs(self):
+    def get_form_kwargs(self) -> dict[str, Any]:
         """Pass the user instance to the form for autofill purposes."""
         kwargs = super().get_form_kwargs()
         kwargs['user'] = self.request.user
         return kwargs
 
-    def get_context_data(self, **kwargs):
+    def get_context_data(self, **kwargs: Any) -> dict[str, Any]:
         """Add extra context including Title and Turnstile."""
         context = super().get_context_data(**kwargs)
         context['title'] = _("Propuesta")

@@ -8,6 +8,8 @@ from products.api.pagination import StandardPagination
 from products.api.serializers import ProductSerializer, CategorySerializer, TagSerializer
 from products.models import Product, Category, Tag
 
+from typing import Any
+
 
 logger = logging.getLogger('api')
 
@@ -17,7 +19,7 @@ class LoggedViewSet(viewsets.ReadOnlyModelViewSet):
     Base viewset that adds logging to standard list and retrieve actions.
     Logs request actions and handles exceptions by logging errors and returning a generic error response.
     """
-    def list(self, request, *args, **kwargs):
+    def list(self, request, *args: Any, **kwargs: Any) -> Response:
         logger.info(f"Solicitud de lista de {self.get_queryset().model.__name__}")
         try:
             response = super().list(request, *args, **kwargs)
@@ -27,7 +29,7 @@ class LoggedViewSet(viewsets.ReadOnlyModelViewSet):
             return Response({"error": f"Error del servidor al solicitar {self.get_queryset().model.__name__.lower()}s"},
                             status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
-    def retrieve(self, request, *args, **kwargs):
+    def retrieve(self, request, *args: Any, **kwargs: Any) -> Response:
         logger.info(f"Solicitud para obtener {self.get_queryset().model.__name__} con id {kwargs['pk']}")
         try:
             response = super().retrieve(request, *args, **kwargs)
@@ -52,8 +54,6 @@ class ProductViewSet(LoggedViewSet):
                     'size',
                     'quantity',
                     'comments',
-                    # 'size__size',
-                    # 'quantity__quantity',
     ))
     serializer_class = ProductSerializer
     pagination_class = StandardPagination

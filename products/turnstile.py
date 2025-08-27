@@ -2,7 +2,7 @@ import requests
 from django.conf import settings
 
 
-def verify_turnstile(token, ip=None):
+def verify_turnstile(token: str, ip: str | None = None) -> bool:
     data = {
         "secret": settings.CLOUDFLARE_TURNSTILE_SECRET_KEY,
         "response": token

@@ -7,7 +7,7 @@ from payment.models import PaymentConfirmation
 
 
 @shared_task
-def send_payment_confirmation_to_seller(payment_confirmation_id):
+def send_payment_confirmation_to_seller(payment_confirmation_id: int) -> int:
     """Task to send an email notification for a product suggestion"""
     payment_confirmation = PaymentConfirmation.objects.get(id=payment_confirmation_id)
     subject = 'Nueva Confirmación de Pago de Princess Castle'

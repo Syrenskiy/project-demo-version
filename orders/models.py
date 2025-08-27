@@ -46,36 +46,36 @@ class Order(models.Model):
     def __str__(self):
         return _('Orden %(order_id)s') % {'order_id': self.id}
 
-    def get_total_product_quantity(self):
+    def get_total_product_quantity(self) -> int:
         """Calculate the total quantity of products in the order."""
         return sum(item.product_quantity for item in self.items.all())
 
-    def get_total_cost(self):
+    def get_total_cost(self) -> Decimal:
         """Calculate the total cost of the order, including discounts and delivery cost."""
         total_cost = self.get_total_cost_before_discount() - self.get_discount() + self.delivery.cost
         return total_cost
 
-    def get_total_cost_before_discount(self):
+    def get_total_cost_before_discount(self) -> Decimal:
         """Calculate the total cost of items in the order before applying discounts."""
         return sum(item.get_cost() for item in self.items.all())
 
-    def get_discount(self):
+    def get_discount(self) -> Decimal:
         """Calculate the discount amount for the order."""
         if self.discount:
             total_cost = self.get_total_cost_before_discount()
             return total_cost * (self.discount / Decimal(100))
         return Decimal(0)
 
-    def get_total_cost_with_partial_payment(self):
+    def get_total_cost_with_partial_payment(self) -> Decimal:
         """Calculate the cost of the order if only a partial payment is made."""
         return self.get_total_cost() / 2
 
-    def send_payment_instructions_email(self):
+    def send_payment_instructions_email(self) -> None:
         """Starts background sending of an email with payment instructions."""
         from orders.tasks import send_payment_instructions
         send_payment_instructions.delay(self.id)
 
-    def save(self, *args, **kwargs):
+    def save(self, *args: Any, **kwargs: Any) -> None:
         """Override save to send order confirmation emails upon payment updates."""
         previous_order = None
         if self.pk:
@@ -115,7 +115,7 @@ class OrderItem(models.Model):
     def __str__(self):
         return str(self.id)
 
-    def get_cost(self):
+    def get_cost(self) -> Decimal:
         """Calculate the total cost for this order item."""
         return self.price * self.product_quantity
 

@@ -2,6 +2,9 @@ import json
 import logging
 from decimal import Decimal
 
+from typing import Any
+from django.http import HttpResponse, HttpResponseRedirect
+
 from django.conf import settings
 from django.contrib import messages
 from django.contrib.auth.mixins import LoginRequiredMixin
@@ -27,7 +30,7 @@ from django.utils.translation import gettext_lazy as _
 logger = logging.getLogger('django')
 
 
-def get_order(request):
+def get_order(request) -> Order:
     """Get order"""
     order_id = request.session.get('order_id')
     order = get_object_or_404(
@@ -48,7 +51,7 @@ class PaymentProcessView(LoginRequiredMixin, DataMixin, TemplateView):
     title_page = _('Resumen del pedido')
     template_name = 'payment/process.html'
 
-    def get_context_data(self, **kwargs):
+    def get_context_data(self, **kwargs: Any) -> dict[str, Any]:
         """Add order data to context."""
         context = super().get_context_data(**kwargs)
         order = get_order(self.request)
@@ -62,7 +65,7 @@ class PaymentInstructionsView(LoginRequiredMixin, DataMixin, TemplateView):
     template_name = 'payment/instructions.html'
 
     @staticmethod
-    def reset_coupon(request, order):
+    def reset_coupon(request, order: Order) -> None:
         """Reset the coupon in the order and session."""
         order.coupon = None
         order.discount = 0
@@ -72,7 +75,7 @@ class PaymentInstructionsView(LoginRequiredMixin, DataMixin, TemplateView):
         request.session._cached_coupon = None
         request.session.modified = True
 
-    def validate_coupon(self, request, order):
+    def validate_coupon(self, request, order: Order) -> HttpResponseRedirect | None:
         """Validate the coupon if exists."""
         coupon_id = request.session.get('coupon_id')
         if coupon_id:
@@ -87,10 +90,10 @@ class PaymentInstructionsView(LoginRequiredMixin, DataMixin, TemplateView):
 
             except Coupon.DoesNotExist:
                 logger.error("Cupón no encontrado en la base de datos.")
-        return
+        return None
 
     @staticmethod
-    def validate_item_price(item, new_price, items_updated):
+    def validate_item_price(item: OrderItem, new_price: float, items_updated: int) -> int:
         """Update a cart item's price if it differs from the current price."""
         if new_price != item.price:
             item.price = new_price
@@ -99,7 +102,7 @@ class PaymentInstructionsView(LoginRequiredMixin, DataMixin, TemplateView):
 
         return items_updated
 
-    def validate_order_items(self, order):
+    def validate_order_items(self, order: Order) -> tuple[int, int]:
         """Validate order items against current product availability and prices."""
         items_updated = 0
         items_removed = 0
@@ -141,7 +144,7 @@ class PaymentInstructionsView(LoginRequiredMixin, DataMixin, TemplateView):
 
         return items_updated, items_removed
 
-    def get(self, request, *args, **kwargs):
+    def get(self, request, *args: Any, **kwargs: Any) -> HttpResponse | HttpResponseRedirect:
         """Checking the coupon before loading the page"""
         order = get_order(self.request)
 
@@ -163,7 +166,7 @@ class PaymentInstructionsView(LoginRequiredMixin, DataMixin, TemplateView):
 
         return super().get(request, *args, **kwargs)
 
-    def clear_cart(self, request):
+    def clear_cart(self, request) -> None:
         """Clears the shopping cart."""
         try:
             cart = Cart(request)
@@ -171,7 +174,7 @@ class PaymentInstructionsView(LoginRequiredMixin, DataMixin, TemplateView):
         except Exception as e:
             logger.error(f'Carrito de compras no existe: {e}')
 
-    def get_context_data(self, **kwargs):
+    def get_context_data(self, **kwargs: Any) -> dict[str, Any]:
         """Generate context for the template."""
         self.clear_cart(self.request)
 
@@ -198,7 +201,7 @@ class PaymentConfirmationView(LoginRequiredMixin, CreateView):
     template_name = 'payment/confirmation.html'
     success_url = reverse_lazy('payment:completed')
 
-    def form_valid(self, form):
+    def form_valid(self, form: PaymentConfirmationForm) -> HttpResponse:
         """Checking Turnstile and assign the logged-in user to the suggestion before saving."""
         token = form.cleaned_data.get('cf_turnstile_response')
         if not verify_turnstile(token, self.request.META.get('REMOTE_ADDR')):
@@ -208,7 +211,7 @@ class PaymentConfirmationView(LoginRequiredMixin, CreateView):
         form.instance.user = self.request.user
         return super().form_valid(form)
 
-    def get_context_data(self, **kwargs):
+    def get_context_data(self, **kwargs: Any) -> dict[str, Any]:
         """Add extra context including Title and Turnstile."""
         context = super().get_context_data(**kwargs)
         context['title'] = _("Confirmación de pago")
@@ -232,7 +235,7 @@ class PaymentCanceledView(DataMixin, TemplateView):
 class UpdatePartialPaymentStatusView(LoginRequiredMixin, View):
     """Updates the status of partial payment for an order via AJAX."""
 
-    def post(self, request, *args, **kwargs):
+    def post(self, request, *args: Any, **kwargs: Any) -> JsonResponse:
         try:
             data = json.loads(request.body)
             order_id = request.session.get('order_id')

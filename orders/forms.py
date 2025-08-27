@@ -62,7 +62,7 @@ class OrderCreateForm(forms.ModelForm):
 
         self.fields['delivery'].empty_label = _("Seleccione una opción")
 
-    def clean_address(self):
+    def clean_address(self) -> str | None:
         """
         Validate the address field based on delivery option.
         Raises a ValidationError if 'Home Delivery' is chosen but address is not provided.
@@ -77,7 +77,7 @@ class OrderCreateForm(forms.ModelForm):
             self.add_error('address', ValidationError(_('Ingrese su dirección')))
         return address
 
-    def clean_phone(self):
+    def clean_phone(self) -> str | None:
         """Validate the phone field."""
         phone = self.cleaned_data.get('phone')
 

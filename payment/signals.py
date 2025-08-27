@@ -6,7 +6,7 @@ from .tasks import send_payment_confirmation_to_seller
 
 
 @receiver(post_save, sender=PaymentConfirmation)
-def send_notification(sender, instance, created, **kwargs):
+def send_notification(sender, instance, created: bool, **kwargs):
     """Triggers the email notification task when a ProductSuggestion is created."""
     if created:
         send_payment_confirmation_to_seller.delay(instance.id)

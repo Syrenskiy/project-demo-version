@@ -2,6 +2,7 @@ import logging
 
 from PIL import Image
 from django import forms
+from django.core.files.uploadedfile import UploadedFile
 
 from django.utils.translation import gettext_lazy as _
 from turnstile.fields import TurnstileField
@@ -23,7 +24,7 @@ class PaymentConfirmationForm(forms.ModelForm):
             'order_id': forms.TextInput(attrs={'class': 'form-control bg-light-gray'}),
         }
 
-    def clean_image(self):
+    def clean_image(self) -> UploadedFile:
         """Validate that the image is of an allowed type and has a valid size."""
         image = self.cleaned_data.get('image')
         allowed_formats = ['jpeg', 'png', 'gif', 'webp', 'bmp', 'tiff']

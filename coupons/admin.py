@@ -10,6 +10,6 @@ class CouponAdmin(admin.ModelAdmin):
     search_fields = ['code']
 
     @admin.display(description='Discount')
-    def display_discount(self, coupon: Coupon):
+    def display_discount(self, coupon: Coupon) -> str:
         return f'{coupon.discount}%'
 

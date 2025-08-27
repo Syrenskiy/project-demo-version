@@ -20,7 +20,7 @@ class OrderEmailSender:
         self.order = order
         self.message, self.context = self.build_message_context()
 
-    def build_message_context(self):
+    def build_message_context(self) -> tuple[str, dict[str, Any]]:
         """
         Build the email message and context details based on order data.
         Returns the email message string and context dictionary.
@@ -72,7 +72,8 @@ class OrderEmailSender:
 
         return message, context
 
-    def send(self, subject, message, to_email, template_name, message_continuation=True):
+    def send(self, subject: str, message: str, to_email: str | list[str],
+             template_name: str, message_continuation: bool = True) -> int:
         """Send an email, optionally rendering an HTML template."""
         if message_continuation:
             message += self.message
@@ -87,7 +88,7 @@ class OrderEmailSender:
 
 
 @shared_task
-def send_order_confirmation_to_client(order_id):
+def send_order_confirmation_to_client(order_id: int) -> None:
     """
     Task to send order confirmation email to the client.
     Activates translation for the client's language and constructs the email content.
@@ -114,7 +115,7 @@ def send_order_confirmation_to_client(order_id):
 
 
 @shared_task
-def send_order_confirmation_to_seller(order_id):
+def send_order_confirmation_to_seller(order_id: int) -> int:
     """
     Task to notify the seller of a new order.
     Constructs and sends an email with order and customer details.
@@ -143,7 +144,7 @@ def send_order_confirmation_to_seller(order_id):
 
 
 @shared_task
-def send_comment_invitation_to_client(order_id):
+def send_comment_invitation_to_client(order_id: int) -> None:
     """
     Task to invite the client to leave feedback on purchased products.
     Constructs a message with a link to the review page and sends it to the client.
@@ -171,7 +172,7 @@ def send_comment_invitation_to_client(order_id):
 
 
 @shared_task
-def send_payment_instructions(order_id):
+def send_payment_instructions(order_id: int) -> None:
     """Task to send payment instructions to the client for a specific order."""
     order = Order.objects.get(id=order_id)
     translation.activate(order.language)

@@ -1,10 +1,11 @@
 import copy
 from decimal import Decimal
+from typing import Any, Iterator
 from django.conf import settings
 from django.db.models import Prefetch
 
 from coupons.models import Coupon
-from products.models import Product, ProductColor
+from products.models import Product, ProductColor, Quantity, Size
 
 
 class Cart:
@@ -23,7 +24,8 @@ class Cart:
         self.coupon_id = self.session.get('coupon_id')
 
     @staticmethod
-    def get_cart_item_id_and_others(product, color, size=None, quantity=None):
+    def get_cart_item_id_and_others(product: Product, color: Color, size: Size | None = None,
+                                    quantity: Quantity | None = None) -> dict[str, Any]:
         """Generates a unique cart item ID based on product attributes."""
         product_id = product.id
         color_id = color.id
@@ -42,7 +44,8 @@ class Cart:
 
         return cart_item
 
-    def add(self, product, color, price, product_quantity=1, size=None, quantity=None):
+    def add(self, product: Product, color: Color, price: Decimal, product_quantity: int = 1,
+            size: Size | None = None, quantity: Quantity | None = None) -> None:
         """Adds a product to the cart or updates its quantity if it already exists."""
         item = self.get_cart_item_id_and_others(product, color, size=size, quantity=quantity)
 
@@ -59,7 +62,8 @@ class Cart:
         self.cart[item['cart_item_id']] = cart_item
         self.save()
 
-    def update(self, product, color, price, size=None, quantity=None):
+    def update(self, product: Product, color: ProductColor, price: Decimal,
+               size: Size | None = None, quantity: Quantity | None = None) -> None:
         """Update the price of an item in the cart."""
         item = self.get_cart_item_id_and_others(product, color, size=size, quantity=quantity)
 
@@ -69,7 +73,8 @@ class Cart:
             self.cart[cart_item_id]['price'] = str(price)
             self.save()
 
-    def subtract(self, product, color, size=None, quantity=None):
+    def subtract(self, product: Product, color: ProductColor, size: Size | None = None,
+                 quantity: Quantity | None = None) -> None:
         """Subtracts a quantity from an item in the cart or removes it if quantity reaches zero."""
         item = self.get_cart_item_id_and_others(product, color, size=size, quantity=quantity)
 
@@ -81,7 +86,8 @@ class Cart:
             self.cart[cart_item_id]['product_quantity'] -= 1
             self.save()
 
-    def remove(self, product, color, size=None, quantity=None):
+    def remove(self, product: Product, color: ProductColor, size: Size | None = None,
+               quantity: Quantity | None = None) -> None:
         """Remove an item from the cart by ID."""
         item = self.get_cart_item_id_and_others(product, color, size=size, quantity=quantity)
 
@@ -91,11 +97,11 @@ class Cart:
             del self.cart[cart_item_id]
             self.save()
 
-    def save(self):
+    def save(self) -> None:
         """Marks the session as modified to ensure cart updates are saved."""
         self.session.modified = True
 
-    def __iter__(self):
+    def __iter__(self) -> Iterator[dict[str, Any]]:
         """Iterates over cart items, yielding item data with associated product details."""
         product_ids = {item['product_id'] for item in self.cart.values()}
 
@@ -140,21 +146,21 @@ class Cart:
         """Returns the total number of items in the cart."""
         return sum(item['product_quantity'] for item in self.cart.values())
 
-    def get_total_price(self):
+    def get_total_price(self) -> Decimal:
         """Calculates the total price of all items in the cart."""
         return sum(
             Decimal(item['price']) * item['product_quantity']
             for item in self.cart.values()
         )
 
-    def clear(self):
+    def clear(self) -> None:
         """Clears all items from the cart and removes any applied coupon."""
         del self.session[settings.CART_SESSION_ID]
         self.session['coupon_id'] = None
         self.save()
 
     @property
-    def coupon(self):
+    def coupon(self) -> Coupon | None:
         """Retrieve applied coupon if exists."""
         if not hasattr(self, '_cached_coupon'):
             if self.coupon_id:
@@ -167,7 +173,7 @@ class Cart:
         return self._cached_coupon
 
     @coupon.setter
-    def coupon(self, value):
+    def coupon(self, value: Coupon | None) -> None:
         """Set or remove the coupon."""
         if value is None:
             self.session.pop('coupon_id', None)
@@ -177,12 +183,12 @@ class Cart:
         self._cached_coupon = value
         self.save()
 
-    def get_discount(self):
+    def get_discount(self) -> Decimal:
         """Calculate discount based on applied coupon."""
         if self.coupon:
             return self.coupon.discount / Decimal(100) * self.get_total_price()
         return Decimal(0)
 
-    def get_total_price_after_discount(self):
+    def get_total_price_after_discount(self) -> Decimal:
         """Calculate total price after applying discount."""
         return self.get_total_price() - self.get_discount()

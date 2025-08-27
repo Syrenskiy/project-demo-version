@@ -8,6 +8,8 @@ from cart.cart import Cart
 from coupons.forms import CouponApplyForm
 from coupons.models import Coupon
 
+from django.http import HttpResponse, HttpResponseRedirect
+
 from django.utils.translation import gettext_lazy as _
 
 
@@ -16,7 +18,7 @@ class CouponApplyView(View):
     View to handle coupon application in the cart. Validates and applies the coupon code,
     updating the session with the coupon details if the coupon is valid and has remaining uses.
     """
-    def post(self, request):
+    def post(self, request) -> HttpResponseRedirect | HttpResponse:
         """
         Handles POST request to apply a coupon to the cart. Validates the coupon code
         against active coupons within the valid date range, and stores the coupon in

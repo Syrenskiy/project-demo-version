@@ -5,6 +5,8 @@ from django.shortcuts import get_object_or_404, redirect
 from django.views import View
 from django.views.generic import TemplateView
 
+from django.http import HttpResponseRedirect
+
 from cart.cart import Cart
 from coupons.forms import CouponApplyForm
 from products.forms import CartAddProductForm
@@ -22,7 +24,7 @@ class BaseCartView(View):
     Base view for handling cart modifications such as adding, subtracting,
     or removing items. Utilizes `modify_cart` method to handle cart actions.
     """
-    def modify_cart(self, request, product_id, color_slug, action):
+    def modify_cart(self, request, product_id: int, color_slug: str, action: str) -> HttpResponseRedirect:
         """Modifies the cart based on the specified action ('add', 'subtract', 'remove')."""
         try:
             cart = Cart(self.request)
@@ -72,19 +74,19 @@ class BaseCartView(View):
 
 class CartAddView(BaseCartView):
     """Handles the addition of items to the cart through a POST request."""
-    def post(self, request, product_id, color_slug):
+    def post(self, request, product_id: int, color_slug: str) -> HttpResponseRedirect:
         return self.modify_cart(request, product_id, color_slug, action="add")
 
 
 class CartSubtractView(BaseCartView):
     """Handles the subtraction of items from the cart through a POST request."""
-    def post(self, request, product_id, color_slug):
+    def post(self, request, product_id: int, color_slug: str) -> HttpResponseRedirect:
         return self.modify_cart(request, product_id, color_slug, action="subtract")
 
 
 class CartRemoveView(BaseCartView):
     """Handles the removal of items from the cart through a POST request."""
-    def post(self, request, product_id, color_slug):
+    def post(self, request, product_id: int, color_slug: str) -> HttpResponseRedirect:
         return self.modify_cart(request, product_id, color_slug, action="remove")
 
 
@@ -93,7 +95,7 @@ class CartDetailView(DataMixin, TemplateView):
     template_name = 'cart/detail.html'
     title_page = _('Su Carrito Princess Castle')
 
-    def get_context_data(self, **kwargs):
+    def get_context_data(self, **kwargs: Any) -> dict[str, Any]:
         """Adds cart items and coupon application form to the context."""
         context = super().get_context_data(**kwargs)
         cart = Cart(self.request)

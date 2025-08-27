@@ -48,36 +48,36 @@ class OrderAdmin(admin.ModelAdmin):
     save_on_top = True
 
     @admin.display(description='Cantidad')
-    def display_quantity(self, order: Order):
+    def display_quantity(self, order: Order) -> int:
         return order.get_total_product_quantity()
 
     @admin.display(description='Total')
-    def display_total(self, order: Order):
+    def display_total(self, order: Order) -> str:
         return f"${order.get_total_cost():.2f}"
 
     @admin.display(description='Creación')
-    def created_formatted(self, order: Order):
+    def created_formatted(self, order: Order) -> str:
         return timezone.localtime(order.created).strftime("%d.%m.%Y %H:%M")
 
     @admin.display(description='Actualización')
-    def updated_formatted(self, order: Order):
+    def updated_formatted(self, order: Order) -> str:
         return timezone.localtime(order.updated).strftime("%d.%m.%Y %H:%M")
 
     @admin.display(description='Detalles')
-    def order_detail(self, order: Order):
+    def order_detail(self, order: Order) -> SafeString:
         """Returns an admin link to view order details."""
         url = reverse('orders:admin_order_detail', args=[order.id])
         return mark_safe(f'<a href="{url}">Ver</a>')
 
     @admin.display(description='Pago Parcial')
-    def display_partial_cost(self, order: Order):
+    def display_partial_cost(self, order: Order) -> str:
         """Displays the cost with partial payment, if applicable."""
         if order.partial_payment:
             return f'${order.get_total_cost_with_partial_payment():.2f}'
         return "-"
 
     @admin.display(description='Entrega')
-    def delivery_formatted(self, order: Order):
+    def delivery_formatted(self, order: Order) -> str:
         """Formats delivery information; shows address if delivery is to home."""
         place = order.delivery.place
         if place == 'A Domicilio':
@@ -85,13 +85,13 @@ class OrderAdmin(admin.ModelAdmin):
         return place
 
     @admin.action(description='Actualizar el Pago como Pago Completo')
-    def set_paid_full(self, request, queryset):
+    def set_paid_full(self, request, queryset: QuerySet[Order]) -> None:
         """Marks selected orders as fully paid."""
         count = queryset.update(paid_full=True)
         self.message_user(request, f'{count} artículos fueron cambiados como Pago Completo.')
 
     @admin.action(description='Exportar a CSV')
-    def export_to_csv(self, request, queryset):
+    def export_to_csv(self, request, queryset: QuerySet[Order]) -> HttpResponse:
         """
         Exports selected orders to CSV format, including all fields except for M2M and O2M relations.
         """

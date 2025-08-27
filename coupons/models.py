@@ -29,7 +29,7 @@ class Coupon(models.Model):
         verbose_name = _('Cupón')
         verbose_name_plural = _('Cupones')
 
-    def use(self):
+    def use(self) -> bool:
         """
         Applies the coupon if it has remaining uses.
         Returns True if the coupon was successfully applied, False otherwise.
@@ -43,7 +43,7 @@ class Coupon(models.Model):
 
         return True
 
-    def is_valid(self):
+    def is_valid(self) -> bool:
         """Checks if the coupon is currently valid based on date range and active status."""
         now = timezone.now()
         return self.valid_from <= now <= self.valid_to and self.active

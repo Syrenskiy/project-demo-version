@@ -3,8 +3,11 @@ import logging
 from django.contrib import messages
 from django.contrib.admin.views.decorators import staff_member_required
 
+from typing import Any
+from decimal import Decimal
+from django.http import HttpResponse, JsonResponse
+
 from django.contrib.auth.mixins import LoginRequiredMixin
-from django.http import JsonResponse
 from django.shortcuts import render, get_object_or_404
 from django.urls import reverse_lazy
 from django.views import View
@@ -31,13 +34,13 @@ class OrderCreateView(LoginRequiredMixin, DataMixin, FormView):
     success_url = reverse_lazy('payment:process')
     title_page = _('Su Pedido')
 
-    def get_form_kwargs(self):
+    def get_form_kwargs(self) -> dict[str, Any]:
         """Pass the user instance to the form for autofill purposes."""
         kwargs = super().get_form_kwargs()
         kwargs['user'] = self.request.user
         return kwargs
 
-    def form_valid(self, form):
+    def form_valid(self, form: OrderCreateForm) -> HttpResponse:
         """Save the order and its items on valid form submission, then redirect to payment processing."""
         cart = Cart(self.request)
         order = form.save(commit=False)
@@ -63,7 +66,7 @@ class OrderCreateView(LoginRequiredMixin, DataMixin, FormView):
         self.request.session['order_id'] = order.id
         return super().form_valid(form)
 
-    def process_cart_coupon(self, form, cart, order):
+    def process_cart_coupon(self, form: OrderCreateForm, cart: Cart, order: Order) -> Order | None:
         """Process any coupon in the cart and apply it to the order if valid."""
         if cart.coupon:
             if cart.coupon.is_valid():
@@ -77,7 +80,7 @@ class OrderCreateView(LoginRequiredMixin, DataMixin, FormView):
 
         return order
 
-    def process_cart_items(self, cart):
+    def process_cart_items(self, cart: Cart) -> int:
         """Validate and update prices for all items in the cart if needed."""
         items_updated = 0
 
@@ -112,7 +115,7 @@ class OrderCreateView(LoginRequiredMixin, DataMixin, FormView):
         return items_updated
 
     @staticmethod
-    def update_item_price(cart, item, new_price, items_updated):
+    def update_item_price(cart: Cart, item: dict, new_price: Decimal, items_updated: int) -> int:
         """Update a cart item's price if it differs from the current price."""
         if new_price != item['price']:
             item['price'] = new_price
@@ -122,7 +125,7 @@ class OrderCreateView(LoginRequiredMixin, DataMixin, FormView):
         return items_updated
 
     @staticmethod
-    def create_order_items(cart, order):
+    def create_order_items(cart: Cart, order: Order) -> Order:
         """Create OrderItem for each item in the cart."""
         for item in cart:
             try:
@@ -140,7 +143,7 @@ class OrderCreateView(LoginRequiredMixin, DataMixin, FormView):
 
         return order
 
-    def get_context_data(self, **kwargs):
+    def get_context_data(self, **kwargs: Any) -> dict[str, Any]:
         """Add the shopping cart object to the context for template rendering."""
         context = super().get_context_data(**kwargs)
         context['cart'] = Cart(self.request)
@@ -153,7 +156,7 @@ class GetDeliveryCostView(View):
     Responds with a JSON object containing the cost or an error if the delivery option is not found.
     """
 
-    def get(self, request, delivery_id, *args, **kwargs):
+    def get(self, request, delivery_id: int, *args: Any, **kwargs: Any) -> JsonResponse:
         try:
             delivery = Delivery.objects.get(id=delivery_id)
             return JsonResponse({'delivery_cost': float(delivery.cost)})
@@ -163,7 +166,7 @@ class GetDeliveryCostView(View):
 
 
 @staff_member_required
-def admin_order_detail(request, order_id):
+def admin_order_detail(request, order_id: int) -> HttpResponse:
     """
     View to display the details of an order for admin users.
     Renders the order detail template with order information.

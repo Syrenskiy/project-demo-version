@@ -1,5 +1,10 @@
 # Princess Castle – Full-Stack E-Commerce Platform
 
+> **Note:**  
+> This repository contains a **sanitized and partial version** of a commercial production codebase.  
+> Sensitive data, credentials, and proprietary business logic have been removed or modified.  
+> The repository is intended **for demonstration and evaluation purposes only**.
+
 [![Live Demo](https://img.shields.io/badge/Live-Demo-brightgreen?style=for-the-badge&logo=world)](https://princess-castle.com)
 
 Princess Castle is a production-ready full-stack e-commerce platform built for a small business to launch its online sales. Developed end-to-end — from backend architecture to deployment — it delivers a complete customer journey with multilingual support, secure payments, and responsive design. The project is deployed on AWS via a fully automated CI/CD pipeline and is engineered with performance, and security.

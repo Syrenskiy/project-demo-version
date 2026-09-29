@@ -3,6 +3,7 @@
 > **Note:**  
 > This repository contains a **sanitized and partial version** of a commercial production codebase.  
 > Sensitive data, credentials, and proprietary business logic have been removed or modified.  
+> The source code for the FastAPI AI microservice and payment webhooks is strictly excluded from this public demo repository for proprietary business reasons.  
 > The repository is intended **for demonstration and evaluation purposes only**.
 
 [![Live Demo](https://img.shields.io/badge/Live-Demo-brightgreen?style=for-the-badge&logo=world)](https://princess-castle.com)
@@ -58,8 +59,10 @@ To improve the site's visibility for search engines, several SEO best practices 
 * **Dynamic Sitemap:** A `sitemap.xml` is automatically generated via Django's sitemaps framework.
 * **Search Performance Tracking:** The website is integrated with `Google Search Console` to monitor indexing status and track search performance.
 
-### 💳 Payment System Evolution
-Initially, the project was developed with `Stripe` and `Conekta` API integrations. Due to the client's specific business and regulatory requirements, the system was ultimately adapted to a robust process that handles orders with manual payment confirmation. This demonstrates adaptability in delivering technical solutions based on real-world business constraints.
+### 💳 Secure Payments
+Integrated `Stripe` & `Conekta` payment APIs with secure webhook handling for seamless automated checkouts.
+
+Note: The source code for the FastAPI AI microservice and payment webhooks is strictly excluded from this public demo repository for proprietary business reasons
 
 ### 🤖 AI Automation Microservice
 Designed and integrated a standalone `FastAPI` microservice powered by the `Gemini AI API`. This service automates the generation of SEO-optimized, multilingual product descriptions based on basic input parameters, saving the business approximately 9 hours of manual work per week and accelerating product launches.

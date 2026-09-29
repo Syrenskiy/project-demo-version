@@ -31,10 +31,11 @@ Princess Castle is a production-ready full-stack e-commerce platform built for a
 
 | Category | Technologies |
 | :--- | :--- |
-| **Backend** | `Python 3.12` `Django 5.0.7` `Django REST Framework` `Celery` `RabbitMQ` `Redis` `OAuth 2.0` |
+| **Backend** | `Python 3.12` `Django 5.0.7` `Django REST Framework` `FastAPI` `Celery` `RabbitMQ` `Redis` `OAuth 2.0` |
 | **Database** | `PostgreSQL` |
 | **Frontend** | `Bootstrap 5` `Django Templates` `HTML5` `CSS3` `JavaScript` |
 | **Deploy & Infrastructure** | `AWS (EC2, S3, RDS)` `Nginx` `uWSGI` `Docker` `Cloudflare` |
+| **AI & Automation** | `Gemini AI API` |
 | **Monitoring & Observability** | `CloudWatch` `Sentry` `Google Search Console` |
 | **CI/CD** | `GitHub Actions` `AWS SSM` |
 | **Testing** | `Unittest` |
@@ -60,9 +61,8 @@ To improve the site's visibility for search engines, several SEO best practices 
 ### 💳 Payment System Evolution
 Initially, the project was developed with `Stripe` and `Conekta` API integrations. Due to the client's specific business and regulatory requirements, the system was ultimately adapted to a robust process that handles orders with manual payment confirmation. This demonstrates adaptability in delivering technical solutions based on real-world business constraints.
 
-## 📄 License
-
-The project is distributed under the MIT license. For more details, see the [LICENSE](LICENSE) file.
+### 🤖 AI Automation Microservice
+Designed and integrated a standalone `FastAPI` microservice powered by the `Gemini AI API`. This service automates the generation of SEO-optimized, multilingual product descriptions based on basic input parameters, saving the business approximately 9 hours of manual work per week and accelerating product launches.
 
 ## 👤 Contacts
 
